@@ -50,6 +50,10 @@ interface CRMIntegration {
     entities: CRMEntity[];
   };
   syncSettings: CRMSyncSetting[];
+  advancedSettings?: {
+    webhookUrl?: string;
+    apiKeyName?: string;
+  };
 }
 
 interface CRMIntegrations {
@@ -387,7 +391,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
   const isCustomIntegration = integration.id === 'custom';
 
 
-  return (
+  return ( /* re-typed to address potential parsing issue */
     <div className="container py-6 space-y-8">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild className="mr-2">
@@ -431,7 +435,6 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                       You'll need administrator access to your {integration.name} account to complete this integration.
  </AlertDescription>
                   </Alert>
-                  <div className="space-y-4"></div>
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-4 w-4" />
                       </div>
@@ -441,7 +444,6 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                           Ensure you have the necessary permissions in your {integration.name} account.
                         </p>
                       </div>
-                    </div>
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary">
                         2
@@ -461,11 +463,12 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                       </div>
                     </div>
                   </div>
-                </div>
+                </CardContent>
               )}
-              {/* Connection Step 2: API Credentials */}
+{null}
+{/* Connection Step 2: API Credentials */}
               {connectionStep === 2 && (
-                <CardContent> 
+                <CardContent>
                   <CRMAccountForm integrationId={integration.id} setConnectionStep={setConnectionStep} />
                 </CardContent>
               )}
@@ -518,7 +521,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                         <Select defaultValue="bidirectional">
                           <SelectTrigger className="w-[280px]">
                             <SelectValue placeholder="Select sync direction" />
-                          </SelectTrigger> 
+                          </SelectTrigger>
     <SelectContent>
     <SelectItem value="bidirectional">Bi-directional (both systems)</SelectItem>
                             <SelectItem value="kontrakpro-to-crm">KontrakPro to {integration.name} only</SelectItem>
@@ -538,7 +541,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                           <Select defaultValue="15">
                             <SelectTrigger className="w-[280px]">
                               <SelectValue placeholder="Select sync frequency" />
-                            </SelectTrigger> 
+                            </SelectTrigger>
     <SelectContent>
     <SelectItem value="5">Every 5 minutes</SelectItem>
                               <SelectItem value="15">Every 15 minutes</SelectItem>
@@ -580,14 +583,14 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                   )}
                   {/* End Advanced Settings Section */}
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setConnectionStep(2)}> 
+                    <Button variant="outline" onClick={() => setConnectionStep(2)}>
                       Back
                     </Button>
-                    <Button onClick={() => alert(`Integration with ${integration.name} completed!`)}> 
+                    <Button onClick={() => alert(`Integration with ${integration.name} completed!`)}>
                       Complete Integration
                     </Button>
                   </div>
-                </div>
+                </CardContent>
               )}
           </Card>
 
