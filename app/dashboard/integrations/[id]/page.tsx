@@ -1,24 +1,60 @@
+"use client";
+
 export const runtime = 'edge';
 
-"use client"
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
+// Define types for CRM Integration data
+interface CRMField {
+  kontrakpro: string;
+  crm: string;
+  required: boolean;
+}
+
+interface CRMEntity {
+  name: string;
+  fields: CRMField[];
+}
+
+interface CRMSyncSetting {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+}
+
+interface CRMIntegration {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  website: string;
+  features: string[];
+  dataMapping: {
+    entities: CRMEntity[];
+  };
+  syncSettings: CRMSyncSetting[];
+}
+
+interface CRMIntegrations {
+  [key: string]: CRMIntegration;
+}
 
 // Mock data for CRM integrations
-const crmIntegrations = {
+const crmIntegrations: CRMIntegrations = {
   salesforce: {
     id: "salesforce",
     name: "Salesforce",
@@ -300,28 +336,33 @@ const crmIntegrations = {
       },
     ],
   },
-}
+};
 
 export default function IntegrationDetailPage({ params }: { params: { id: string } }) {
-  const [connectionStep, setConnectionStep] = useState(1)
-  const [apiKey, setApiKey] = useState("")
-  const [instance, setInstance] = useState("")
-  const [syncSettings, setSyncSettings] = useState(crmIntegrations[params.id]?.syncSettings || [])
+  const [connectionStep, setConnectionStep] = useState(1);
+  const [apiKey, setApiKey] = useState("");
+  const [instance, setInstance] = useState("");
+  
+  // Get integration data based on ID, ensuring params.id is a valid key
+  const integrationId = params.id as keyof CRMIntegrations;
+  const currentIntegration = crmIntegrations[integrationId];
 
-  // Get integration data based on ID
-  const integration = crmIntegrations[params.id] || {
+  const [syncSettings, setSyncSettings] = useState<CRMSyncSetting[]>(currentIntegration?.syncSettings || []);
+
+  // Fallback for when integration is not found
+  const integration = currentIntegration || {
     id: params.id,
     name: params.id.charAt(0).toUpperCase() + params.id.slice(1),
     description: "Connect your CRM system to KontrakPro.",
     icon: "/placeholder.svg?height=80&width=80",
     website: "#",
     features: [],
-    dataMapping: { entities: [] },
-    syncSettings: [],
-  }
+    dataMapping: { entities: [] as CRMEntity[] }, // Ensure entities is typed
+    syncSettings: [] as CRMSyncSetting[], // Ensure syncSettings is typed
+  };
 
   const handleSyncSettingChange = (id: string, enabled: boolean) => {
-    setSyncSettings(syncSettings.map((setting) => (setting.id === id ? { ...setting, enabled } : setting)))
+    setSyncSettings(syncSettings.map((setting: CRMSyncSetting) => (setting.id === id ? { ...setting, enabled } : setting)));
   }
 
   const handleConnect = () => {
@@ -465,7 +506,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                     </p>
 
                     <div className="space-y-4">
-                      {syncSettings.map((setting) => (
+                      {syncSettings.map((setting: CRMSyncSetting) => (
                         <div key={setting.id} className="flex items-center justify-between">
                           <div className="space-y-0.5">
                             <Label htmlFor={setting.id}>{setting.name}</Label>
@@ -552,7 +593,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {integration.features.map((feature, index) => (
+                    {integration.features.map((feature: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-green-500 mt-0.5" />
                         <span>{feature}</span>
@@ -570,7 +611,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {integration.dataMapping.entities.map((entity, index) => (
+                    {integration.dataMapping.entities.map((entity: CRMEntity, index: number) => (
                       <div key={index} className="space-y-2">
                         <h3 className="text-lg font-medium">{entity.name} Mapping</h3>
                         <div className="rounded-md border">
@@ -583,7 +624,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
-                              {entity.fields.map((field, fieldIndex) => (
+                              {entity.fields.map((field: CRMField, fieldIndex: number) => (
                                 <tr key={fieldIndex}>
                                   <td className="px-4 py-3 text-sm">{field.kontrakpro}</td>
                                   <td className="px-4 py-3 text-sm">{field.crm}</td>
