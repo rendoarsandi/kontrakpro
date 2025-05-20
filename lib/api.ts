@@ -41,7 +41,7 @@ async function handleResponse(response: Response) {
 }
 
 // Fungsi untuk menambahkan token ke header
-function getAuthHeaders() {
+function getAuthHeaders(isFormData: boolean = false) { // Tambahkan parameter isFormData
   let token = '';
 
   // Cek apakah kode berjalan di browser
@@ -49,10 +49,19 @@ function getAuthHeaders() {
     token = localStorage.getItem('token') || '';
   }
 
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
+  const headers: HeadersInit = {}; // Gunakan HeadersInit untuk tipe yang lebih fleksibel
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+  // Untuk FormData, browser akan mengatur Content-Type yang benar (multipart/form-data) secara otomatis
+  // jadi kita tidak perlu menyetelnya di sini jika isFormData true.
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
 }
 
 // API Service
@@ -106,16 +115,22 @@ export const api = {
     }
 
     if (token) {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, { // Use NEXT_PUBLIC_API_URL
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+      } catch (error) {
+        console.error('Error during API logout call:', error); 
+        // Decide if we should proceed to clear local storage even if API call fails
+      }
     }
 
-    // Hapus token dari localStorage
+    // Hapus token dan data user dari localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
+      localStorage.removeItem('userData'); // Ensure this matches the key used in UserNav
     }
   },
 
@@ -171,16 +186,11 @@ export const api = {
     return handleResponse(response);
   },
 
-  createContract: async (contractData: {
-    title: string;
-    description?: string;
-    type: string;
-    organization_id: string;
-  }) => {
+  createContract: async (contractData: FormData) => { // Ubah tipe argumen menjadi FormData
     const response = await fetch(`${API_URL}/api/contracts`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(contractData)
+      headers: getAuthHeaders(true), // Panggil getAuthHeaders dengan isFormData = true
+      body: contractData // Kirim FormData langsung
     });
 
     return handleResponse(response);

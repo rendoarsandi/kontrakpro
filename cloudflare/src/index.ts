@@ -5,8 +5,33 @@ import { login, signup, refreshToken, logout } from './auth/handlers';
 import { uploadDocument, downloadDocument, listDocuments, deleteDocument } from './documents/handlers';
 import { createWorkflow, getWorkflow, updateWorkflowStep, getUserTasks } from './workflows/handlers';
 import { getUserNotifications, markNotificationAsRead, createReminder, getUserReminders } from './notifications/handlers';
-import { executeAnalytics, getSummaryMetrics, getDashboard, createDashboard } from './analytics/handlers';
+import { 
+  executeAnalytics, 
+  getSummaryMetrics, 
+  getDashboard, 
+  createDashboard,
+  getRiskAndComplianceAuditLogs // Import handler baru
+} from './analytics/handlers';
 import { getReports, getReport, createReport, generateReport } from './analytics/reports';
+import {
+  createSignatureRequestHandler,
+  getSignatureRequestHandler,
+  addSignerToRequestHandler,
+  updateSignerStatusHandler
+} from './e-signature/handlers';
+import {
+  configureCrmIntegrationHandler,
+  getCrmIntegrationHandler,
+  syncCrmDataHandler,
+  triggerWorkflowFromCrmEventHandler // Import handler baru
+} from './crm/handlers';
+import {
+  analyzeContractRiskHandler,
+  extractContractClausesHandler,
+  getContractLanguageRecommendationsHandler,
+  detectAnomalyHandler // Import handler baru
+} from './ai/handlers';
+import { addCommentHandler, getCommentsHandler } from './collaboration/handlers'; // Import handler kolaborasi
 import { authenticate } from './auth/middleware';
 import { corsHeaders } from './utils/cors';
 
@@ -80,6 +105,29 @@ router.get('/api/reports', getReports);
 router.get('/api/reports/:id', getReport);
 router.post('/api/reports', createReport);
 router.get('/api/reports/:id/generate', generateReport);
+router.get('/api/analytics/audit-logs/risk-compliance', getRiskAndComplianceAuditLogs);
+
+// Endpoint E-Signature
+router.post('/api/e-signatures/requests', createSignatureRequestHandler);
+router.get('/api/e-signatures/requests/:id', getSignatureRequestHandler);
+router.post('/api/e-signatures/requests/:id/signers', addSignerToRequestHandler);
+router.put('/api/e-signatures/requests/:id/signers/:signerId', updateSignerStatusHandler); // Route baru
+
+// Endpoint CRM Integration
+router.post('/api/crm/integrations', configureCrmIntegrationHandler);
+router.get('/api/crm/integrations', getCrmIntegrationHandler);
+router.post('/api/crm/sync', syncCrmDataHandler);
+router.post('/api/crm/event-webhook', triggerWorkflowFromCrmEventHandler); // Route baru untuk webhook CRM
+
+// Endpoint AI Analysis
+router.post('/api/ai/analyze-risk', analyzeContractRiskHandler);
+router.post('/api/ai/extract-clauses', extractContractClausesHandler);
+router.post('/api/ai/language-recommendations', getContractLanguageRecommendationsHandler);
+router.post('/api/ai/detect-anomalies', detectAnomalyHandler); // Route baru
+
+// Endpoint Collaboration
+router.post('/api/comments', addCommentHandler); // Route baru
+router.get('/api/comments', getCommentsHandler);    // Route baru
 
 // Handler untuk permintaan yang tidak cocok
 router.all('*', () => new Response('Not Found', { status: 404 }));
@@ -100,8 +148,9 @@ export default {
           ...corsHeaders
         }
       });
-    } catch (error) {
-      // Handle error
+    } catch (error: any) { // Tambahkan tipe any pada error
+      console.error("Unhandled error:", error);
+      // Pastikan response error juga memiliki CORS headers
       return new Response(JSON.stringify({ error: error.message || 'Internal Server Error' }), {
         status: 500,
         headers: {

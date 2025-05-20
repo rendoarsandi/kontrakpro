@@ -44,8 +44,18 @@ export function NotificationDropdown() {
       )
     } catch (error) {
       console.error("Error fetching notifications:", error)
-      setNotifications([])
-      setUnreadCount(0)
+      // Tambahkan notifikasi dummy jika fetch gagal
+      setNotifications([
+        {
+          id: 'dummy-1',
+          title: 'Welcome!',
+          message: 'Anda login dengan mode demo. Notifikasi backend tidak tersedia.',
+          status: NotificationStatus.UNREAD,
+          created_at: Date.now(), // gunakan timestamp number
+          type: 'info',
+        }
+      ])
+      setUnreadCount(1)
     } finally {
       setLoading(false)
     }

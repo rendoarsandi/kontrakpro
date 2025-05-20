@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, FileText, Loader2 } from "lucide-react"
+import { Bell, Eye, EyeOff, FileText, Loader2, Shield, Lock } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,24 +21,63 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    // Simulasi loading
-    setTimeout(() => {
-      // Redirect ke dashboard setelah "login"
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
+      }
+
+      // Simpan token di localStorage
+      localStorage.setItem('token', data.token)
+      
+      // Redirect ke dashboard
       router.push("/dashboard")
-    }, 1500)
+    } catch (error: any) {
+      console.error('Login failed:', error)
+      // Tambahkan toast atau alert untuk menampilkan error
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleMockLogin = () => {
-    setIsLoading(true)
-
-    // Redirect langsung ke dashboard
-    setTimeout(() => {
-      router.push("/dashboard")
-    }, 800)
+  // Tambahkan fungsi mock login
+  const handleMockLogin = async () => {
+    try {
+      // Set mock token dan user data
+      localStorage.setItem('token', 'mock-token-123')
+      localStorage.setItem('user', JSON.stringify({
+        id: 'mock-user-123',
+        email: 'demo@kontrakpro.com',
+        name: 'Demo User',
+        organization: {
+          id: 'mock-org-123',
+          name: 'Demo Organization'
+        }
+      }))
+      
+      console.log('Mock login successful, redirecting to dashboard...')
+      
+      // Gunakan await untuk memastikan redirect selesai
+      await router.push('/dashboard')
+      
+      // Refresh halaman untuk memastikan perubahan state
+      router.refresh()
+    } catch (error) {
+      console.error('Error during mock login:', error)
+    }
   }
 
   return (
@@ -124,15 +163,13 @@ export default function LoginPage() {
 
               <div className="mt-4">
                 <Separator className="my-4" />
-                <Button variant="outline" className="w-full" onClick={handleMockLogin} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Redirecting...
-                    </>
-                  ) : (
-                    "Quick Access to Dashboard (Mock Login)"
-                  )}
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleMockLogin}
+                >
+                  Demo Login (Mock)
                 </Button>
               </div>
 
@@ -150,17 +187,53 @@ export default function LoginPage() {
       {/* Right side - Image */}
       <div className="hidden bg-muted md:block md:w-1/2">
         <div className="flex h-full items-center justify-center bg-primary-foreground p-8">
-          <div className="max-w-md space-y-6 text-center">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Streamline Your Contract Management</h1>
-              <p className="text-muted-foreground">
+          <div className="max-w-md space-y-8">
+            {/* Hero Section */}
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Streamline Your Contract Management
+              </h1>
+              <p className="text-muted-foreground text-lg">
                 KontrakPro helps you manage the entire contract lifecycle from creation to renewal, saving time and
                 reducing risk.
               </p>
             </div>
-            <div className="relative h-[300px] w-full overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-muted-foreground/20">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <FileText className="h-24 w-24 text-primary/40" />
+
+            {/* Feature Highlights */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-lg bg-background/50 backdrop-blur-sm">
+                <FileText className="h-8 w-8 text-primary mb-2" />
+                <h3 className="font-semibold mb-1">Smart Templates</h3>
+                <p className="text-sm text-muted-foreground">Create contracts quickly with AI-powered templates</p>
+              </div>
+              <div className="p-4 rounded-lg bg-background/50 backdrop-blur-sm">
+                <Eye className="h-8 w-8 text-primary mb-2" />
+                <h3 className="font-semibold mb-1">Real-time Tracking</h3>
+                <p className="text-sm text-muted-foreground">Monitor contract status and approvals instantly</p>
+              </div>
+              <div className="p-4 rounded-lg bg-background/50 backdrop-blur-sm">
+                <Bell className="h-8 w-8 text-primary mb-2" />
+                <h3 className="font-semibold mb-1">Smart Alerts</h3>
+                <p className="text-sm text-muted-foreground">Never miss important deadlines with automated reminders</p>
+              </div>
+              <div className="p-4 rounded-lg bg-background/50 backdrop-blur-sm">
+                <FileText className="h-8 w-8 text-primary mb-2" />
+                <h3 className="font-semibold mb-1">E-Signature</h3>
+                <p className="text-sm text-muted-foreground">Secure digital signing for faster approvals</p>
+              </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="pt-4 border-t border-border/50">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  <span>ISO 27001 Certified</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  <span>End-to-end Encryption</span>
+                </div>
               </div>
             </div>
           </div>

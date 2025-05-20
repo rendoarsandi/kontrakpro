@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 
@@ -32,6 +32,7 @@ interface FormData {
   description: string;
   type: string;
   organization_id: string;
+  file?: File; // Tambahkan properti file opsional
 }
 
 // Komponen untuk membuat kontrak baru
@@ -45,6 +46,8 @@ export function CreateContractForm() {
     type: "",
     organization_id: "" // Ini akan diisi dari respons login/signup
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State untuk file
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref untuk input file
 
   // Mengambil organization_id dari localStorage saat komponen dimount
   useState(() => {
@@ -54,7 +57,7 @@ export function CreateContractForm() {
         if (userData) {
           const user = JSON.parse(userData)
           if (user.organization?.id) {
-            setFormData(prev => ({
+            setFormData((prev: FormData) => ({
               ...prev,
               organization_id: user.organization.id
             }))
@@ -71,13 +74,29 @@ export function CreateContractForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }))
   }
 
   // Handler untuk perubahan select
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }))
   }
+
+  // Handler untuk perubahan input file
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset input file
+    }
+  };
 
   // Handler untuk submit form
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,8 +115,18 @@ export function CreateContractForm() {
     try {
       setLoading(true)
       
+      // Buat objek FormData untuk mengirim file
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('description', formData.description);
+      data.append('type', formData.type);
+      data.append('organization_id', formData.organization_id);
+      if (selectedFile) {
+        data.append('file', selectedFile);
+      }
+      
       // Buat kontrak baru
-      const contract = await api.createContract(formData)
+      const contract = await api.createContract(data) // Kirim objek FormData
       
       toast({
         title: "Contract Created",
@@ -152,10 +181,35 @@ export function CreateContractForm() {
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="file">Contract Document</Label>
+            <Input
+              id="file"
+              name="file"
+              type="file"
+              ref={fileInputRef} // Tambahkan ref
+              onChange={handleFileChange}
+              className={selectedFile ? "mb-2" : ""} // Tambahkan margin jika file dipilih
+            />
+            {selectedFile && (
+              <div className="flex items-center justify-between text-sm p-2 border rounded-md">
+                <span>{selectedFile.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveFile}
+                >
+                  Remove
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-2">
             <Label htmlFor="type">Contract Type <span className="text-destructive">*</span></Label>
             <Select
               value={formData.type}
-              onValueChange={(value) => handleSelectChange("type", value)}
+              onValueChange={(value: string) => handleSelectChange("type", value)} // Tambahkan tipe untuk value
               required
             >
               <SelectTrigger>

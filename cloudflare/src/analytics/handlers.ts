@@ -6,11 +6,20 @@ import {
   AnalyticsRequest, 
   Dashboard, 
   DashboardWidget, 
-  Report 
+  Report,
+  MetricType, // Import Enum MetricType
+  DimensionType, // Import Enum DimensionType
+  AnalyticsFilter // Import AnalyticsFilter untuk type checking
 } from './types';
 
+// Interface untuk request yang memiliki params (dari itty-router)
+interface RequestWithParams extends Request {
+  params?: { [key: string]: string };
+  user?: any; // Menambahkan user dari middleware autentikasi
+}
+
 // Mengeksekusi permintaan analitik
-export async function executeAnalytics(request: Request, env: Env): Promise<Response> {
+export async function executeAnalytics(request: RequestWithParams, env: Env): Promise<Response> {
   try {
     const analyticsRequest: AnalyticsRequest = await request.json();
     const analyticsService = new AnalyticsService(env);
@@ -35,7 +44,7 @@ export async function executeAnalytics(request: Request, env: Env): Promise<Resp
         ...corsHeaders
       }
     });
-  } catch (error) {
+  } catch (error: any) { // Menggunakan tipe any untuk error
     return new Response(JSON.stringify({ error: error.message || 'Failed to execute analytics' }), {
       status: 500,
       headers: {
@@ -47,7 +56,7 @@ export async function executeAnalytics(request: Request, env: Env): Promise<Resp
 }
 
 // Mendapatkan metrik ringkasan
-export async function getSummaryMetrics(request: Request, env: Env): Promise<Response> {
+export async function getSummaryMetrics(request: RequestWithParams, env: Env): Promise<Response> {
   try {
     const user = request.user;
     const url = new URL(request.url);
@@ -58,39 +67,39 @@ export async function getSummaryMetrics(request: Request, env: Env): Promise<Res
     
     // Metrik total kontrak
     const totalContractsRequest: AnalyticsRequest = {
-      metrics: [{ type: 'count', field: 'contracts.id' }],
+      metrics: [{ type: MetricType.COUNT, field: 'contracts.id' }], // Menggunakan Enum
       filters: organizationId ? [
-        { field: 'contracts.organization_id', operator: 'eq', value: organizationId }
+        { field: 'contracts.organization_id', operator: 'eq', value: organizationId } as AnalyticsFilter // Type assertion
       ] : [],
       timePeriod: timePeriod as any
     };
     
     // Metrik kontrak berdasarkan status
     const contractsByStatusRequest: AnalyticsRequest = {
-      metrics: [{ type: 'count', field: 'contracts.id' }],
-      dimensions: [{ type: 'contract_status', field: 'contracts.status' }],
+      metrics: [{ type: MetricType.COUNT, field: 'contracts.id' }], // Menggunakan Enum
+      dimensions: [{ type: DimensionType.CONTRACT_STATUS, field: 'contracts.status' }], // Menggunakan Enum
       filters: organizationId ? [
-        { field: 'contracts.organization_id', operator: 'eq', value: organizationId }
+        { field: 'contracts.organization_id', operator: 'eq', value: organizationId } as AnalyticsFilter // Type assertion
       ] : [],
       timePeriod: timePeriod as any
     };
     
     // Metrik workflow aktif
     const activeWorkflowsRequest: AnalyticsRequest = {
-      metrics: [{ type: 'count', field: 'workflows.id' }],
+      metrics: [{ type: MetricType.COUNT, field: 'workflows.id' }], // Menggunakan Enum
       filters: [
-        { field: 'workflows.status', operator: 'eq', value: 'active' },
-        ...(organizationId ? [{ field: 'contracts.organization_id', operator: 'eq', value: organizationId }] : [])
+        { field: 'workflows.status', operator: 'eq', value: 'active' } as AnalyticsFilter, // Type assertion
+        ...(organizationId ? [{ field: 'contracts.organization_id', operator: 'eq', value: organizationId } as AnalyticsFilter] : []) // Type assertion
       ],
       timePeriod: timePeriod as any
     };
     
     // Metrik tugas yang menunggu
     const pendingTasksRequest: AnalyticsRequest = {
-      metrics: [{ type: 'count', field: 'workflow_steps.id' }],
+      metrics: [{ type: MetricType.COUNT, field: 'workflow_steps.id' }], // Menggunakan Enum
       filters: [
-        { field: 'workflow_steps.status', operator: 'eq', value: 'pending' },
-        ...(organizationId ? [{ field: 'contracts.organization_id', operator: 'eq', value: organizationId }] : [])
+        { field: 'workflow_steps.status', operator: 'eq', value: 'pending' } as AnalyticsFilter, // Type assertion
+        ...(organizationId ? [{ field: 'contracts.organization_id', operator: 'eq', value: organizationId } as AnalyticsFilter] : []) // Type assertion
       ],
       timePeriod: timePeriod as any
     };
@@ -118,7 +127,7 @@ export async function getSummaryMetrics(request: Request, env: Env): Promise<Res
         ...corsHeaders
       }
     });
-  } catch (error) {
+  } catch (error: any) { // Menggunakan tipe any untuk error
     return new Response(JSON.stringify({ error: error.message || 'Failed to get summary metrics' }), {
       status: 500,
       headers: {
@@ -130,10 +139,20 @@ export async function getSummaryMetrics(request: Request, env: Env): Promise<Res
 }
 
 // Mendapatkan dashboard
-export async function getDashboard(request: Request, env: Env): Promise<Response> {
+export async function getDashboard(request: RequestWithParams, env: Env): Promise<Response> {
   try {
-    const { params } = request;
-    const id = params.id;
+    const { params } = request; // Sekarang params dikenali
+    const id = params?.id;
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Dashboard ID is required' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
     
     // Dapatkan dashboard dari database
     const { results } = await env.DB.prepare(
@@ -164,7 +183,7 @@ export async function getDashboard(request: Request, env: Env): Promise<Response
     // Parse config dan position dari widget
     const widgets = widgetResults.map(widget => ({
       ...widget,
-      config: JSON.parse(widget.config),
+      config: JSON.parse(widget.config as string), // Type assertion untuk widget.config
       position: {
         x: widget.position_x,
         y: widget.position_y,
@@ -185,7 +204,7 @@ export async function getDashboard(request: Request, env: Env): Promise<Response
         ...corsHeaders
       }
     });
-  } catch (error) {
+  } catch (error: any) { // Menggunakan tipe any untuk error
     return new Response(JSON.stringify({ error: error.message || 'Failed to get dashboard' }), {
       status: 500,
       headers: {
@@ -197,10 +216,19 @@ export async function getDashboard(request: Request, env: Env): Promise<Response
 }
 
 // Membuat dashboard baru
-export async function createDashboard(request: Request, env: Env): Promise<Response> {
+export async function createDashboard(request: RequestWithParams, env: Env): Promise<Response> {
   try {
-    const user = request.user;
-    const { name, description, widgets } = await request.json();
+    const user = request.user; // Memastikan user diambil dari request
+    if (!user || !user.id) {
+      return new Response(JSON.stringify({ error: 'User not authenticated' }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+    const { name, description, widgets: widgetData } = await request.json() as Dashboard; // Menggunakan tipe Dashboard
     
     // Validasi input
     if (!name) {
@@ -221,55 +249,108 @@ export async function createDashboard(request: Request, env: Env): Promise<Respo
       `INSERT INTO dashboards (id, name, description, created_at, updated_at, created_by)
        VALUES (?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, name, description || '', now, now, user.id)
+    .bind(id, name, description || '', now, now, user.id) // Menggunakan user.id
     .run();
-    
-    // Simpan widget jika ada
-    if (widgets && widgets.length > 0) {
-      for (const widget of widgets) {
-        const widgetId = generateId();
-        
-        await env.DB.prepare(
-          `INSERT INTO dashboard_widgets (
-            id, dashboard_id, type, title, config, position_x, position_y, width, height, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+    // Simpan widget
+    if (widgetData && widgetData.length > 0) {
+      const widgetInserts = widgetData.map(widget => (
+        env.DB.prepare(
+          `INSERT INTO dashboard_widgets (id, dashboard_id, type, title, config, position_x, position_y, width, height, created_at, updated_at, created_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
         .bind(
-          widgetId,
-          id,
-          widget.type,
-          widget.title,
-          JSON.stringify(widget.config),
-          widget.position.x,
-          widget.position.y,
-          widget.position.width,
-          widget.position.height,
-          now
+          generateId(), 
+          id, 
+          widget.type, 
+          widget.title, 
+          JSON.stringify(widget.config), 
+          widget.position.x, 
+          widget.position.y, 
+          widget.position.width, 
+          widget.position.height, 
+          now, 
+          now, 
+          user.id // Menggunakan user.id
         )
-        .run();
-      }
+      ));
+      await Promise.all(widgetInserts.map(insert => insert.run()));
     }
-    
-    // Buat respons
-    const dashboard: Dashboard = {
-      id,
-      name,
-      description,
-      widgets: widgets || [],
-      created_at: now,
-      updated_at: now,
-      created_by: user.id
-    };
-    
-    return new Response(JSON.stringify(dashboard), {
+
+    return new Response(JSON.stringify({ 
+      id, 
+      name, 
+      description, 
+      widgets: widgetData, 
+      created_at: now, 
+      updated_at: now, 
+      created_by: user.id // Menggunakan user.id
+    }), {
       status: 201,
       headers: {
         'Content-Type': 'application/json',
         ...corsHeaders
       }
     });
-  } catch (error) {
+  } catch (error: any) { // Menggunakan tipe any untuk error
     return new Response(JSON.stringify({ error: error.message || 'Failed to create dashboard' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+}
+
+// Mendapatkan log audit untuk analisis risiko dan kepatuhan
+export async function getRiskAndComplianceAuditLogs(request: Request, env: Env): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const contractId = url.searchParams.get('contract_id');
+    const userId = url.searchParams.get('user_id');
+    const actionType = url.searchParams.get('action_type'); // Misalnya: 'contract_viewed', 'version_created', 'approval_status_changed'
+
+    let query = `SELECT * FROM audit_logs`;
+    const bindings: any[] = [];
+    const conditions: string[] = [];
+
+    if (contractId) {
+      conditions.push(`resource_type = 'contract' AND resource_id = ?`);
+      bindings.push(contractId);
+    }
+    if (userId) {
+      conditions.push(`user_id = ?`);
+      bindings.push(userId);
+    }
+    if (actionType) {
+      conditions.push(`action = ?`);
+      bindings.push(actionType);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    bindings.push(limit, offset);
+
+    const { results } = await env.DB.prepare(query).bind(...bindings).all();
+
+    // TODO: Tambahkan logika analisis risiko berdasarkan pola log audit
+    // Misalnya, deteksi akses yang tidak biasa, perubahan status yang sering, dll.
+
+    return new Response(JSON.stringify({ audit_logs: results, message: "Risk and compliance audit logs fetched" }), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching risk and compliance audit logs:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to fetch risk and compliance audit logs' }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',

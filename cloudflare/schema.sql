@@ -126,3 +126,31 @@ CREATE INDEX idx_workflow_steps_workflow ON workflow_steps(workflow_id);
 CREATE INDEX idx_comments_contract ON comments(contract_id);
 CREATE INDEX idx_documents_contract ON documents(contract_id);
 CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
+
+-- E-Signature Tables
+CREATE TABLE e_signature_requests (
+  id TEXT PRIMARY KEY,
+  contract_id TEXT NOT NULL,
+  status TEXT NOT NULL, -- pending, sent, completed, voided
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (contract_id) REFERENCES contracts(id)
+);
+
+CREATE TABLE e_signature_signers (
+  id TEXT PRIMARY KEY,
+  request_id TEXT NOT NULL,
+  user_id TEXT, -- Can be null if signer is external
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL, -- pending, signed, declined
+  signed_at INTEGER,
+  signed_document_key TEXT, -- R2 key for the signed document
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (request_id) REFERENCES e_signature_requests(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE INDEX idx_e_signature_requests_contract ON e_signature_requests(contract_id);
+CREATE INDEX idx_e_signature_signers_request ON e_signature_signers(request_id);

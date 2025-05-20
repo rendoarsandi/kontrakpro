@@ -16,6 +16,10 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     optimizeCss: true
+  },
+  // Development server port configuration
+  devServer: {
+    port: 3001
   }
 }
 
