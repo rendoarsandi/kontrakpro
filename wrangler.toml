@@ -1,0 +1,14 @@
+name = "kontrakpro-pages"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Add any other Pages-specific settings if needed.
+# For example, if you have environment variables specific to your Pages deployment,
+# you can add them here under a [vars] section.
+# [vars]
+# MY_ENV_VAR = "value"
+
+# If your Pages functions need access to bindings like KV, D1, or R2,
+# and they are part of the same project being deployed to Pages,
+# you might need to declare them here as well.
+# However, the error is specifically about nodejs_compat, so let's start with that.
