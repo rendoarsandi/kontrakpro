@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 import { CRMAccountForm } from "./crm-account-form";
 

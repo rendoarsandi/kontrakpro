@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { ArrowDown, Plus, Save, Trash2 } from "lucide-react"
 
@@ -11,8 +13,6 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-
-"use client"
 
 export default function WorkflowBuilderPage() {
   const [workflowName, setWorkflowName] = useState("New Approval Workflow")
@@ -202,7 +202,7 @@ export default function WorkflowBuilderPage() {
                             placeholder="e.g., contract value > 100000" // Adjusted placeholder for clarity
                           />
                         </div>
-                      </div>
+                      )}
                       <div className="mt-4 flex items-center space-x-2">
                         <Switch id={`required-${step.id}`} defaultChecked />
                         <Label htmlFor={`required-${step.id}`}>Required Step</Label>
