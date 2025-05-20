@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { ArrowDown, Plus, Save, Trash2 } from "lucide-react"
 
@@ -13,6 +11,8 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+
+"use client"
 
 export default function WorkflowBuilderPage() {
   const [workflowName, setWorkflowName] = useState("New Approval Workflow")
@@ -199,7 +199,7 @@ export default function WorkflowBuilderPage() {
                         <div className="space-y-2">
                           <Label>Condition Logic</Label>
                           <Input
-                            placeholder="e.g., contract value > 100000"
+                            placeholder="e.g., contract value > 100000" // Adjusted placeholder for clarity
                           />
                         </div>
                       </div>

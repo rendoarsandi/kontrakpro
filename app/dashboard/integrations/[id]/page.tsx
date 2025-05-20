@@ -1,6 +1,4 @@
-"use client";
-
-export const runtime = 'edge';
+"use client"; // This should be the very first line
 
 import { useState } from "react";
 import Link from "next/link";
@@ -16,6 +14,8 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+
+export const runtime = 'edge';
 
 import { CRMAccountForm } from "./crm-account-form";
 
@@ -430,12 +430,11 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                       You'll need administrator access to your {integration.name} account to complete this integration.
  </AlertDescription>
                   </Alert>
-                  <div className="space-y-4">
- <div className="flex items-center gap-2">
+                  <div className="space-y-4"></div>
+ <div className="flex items-center gap-2"></div>
  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
+ </div>
  <p className="font-medium">Step 1: Prepare your {integration.name} account</p>
  <p className="text-sm text-muted-foreground">
                           Ensure you have the necessary permissions in your {integration.name} account.
@@ -448,9 +447,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                       </div>
                       <div className="flex-1">
  <p className="font-medium">Step 2: Provide API credentials</p>
- <p className="text-sm text-muted-foreground">
-                          Enter your {integration.name} API key and instance URL.
- </p>
+ <p className="text-sm text-muted-foreground"></p>
  </div>
  </div>
  <div className="flex items-center gap-2">
