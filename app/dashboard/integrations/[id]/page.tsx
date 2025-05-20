@@ -1,7 +1,10 @@
 "use client"; // This should be the very first line
 
-import { useState } from "react";import Link from "next/link";import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -429,8 +432,6 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
  </AlertDescription>
                   </Alert>
                   <div className="space-y-4"></div>
- <div className="flex items-center gap-2"></div>
- <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-4 w-4" />
                       </div>

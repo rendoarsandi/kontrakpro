@@ -13,13 +13,8 @@ const nextConfig = {
   },
   trailingSlash: true,
   // Mengoptimalkan untuk Cloudflare Pages
-  swcMinify: true,
   experimental: {
     optimizeCss: true
-  },
-  // Development server port configuration
-  devServer: {
-    port: 3001
   },
   // Enable Node.js compatibility mode for Cloudflare Pages
   env: {
