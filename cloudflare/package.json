@@ -1,0 +1,23 @@
+{
+  "name": "kontrakpro-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "format": "prettier --write \"src/**/*.{js,ts}\"",
+    "lint": "eslint \"src/**/*.{js,ts}\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "itty-router": "^4.0.23"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@types/bcryptjs": "^2.4.6",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.22.1"
+  }
+}

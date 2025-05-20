@@ -1,0 +1,26 @@
+name = "kontrakpro-api"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+
+[vars]
+ENVIRONMENT = "development"
+
+# Konfigurasi D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "kontrakpro-db"
+database_id = "0c2cc587-c3d5-41bf-9f10-f7431c5c65f3"
+
+# Konfigurasi KV Namespaces
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "4c34d24d4d1d4a3e9f0766e913278a7f"
+
+[[kv_namespaces]]
+binding = "SETTINGS"
+id = "b75fc1e4e71940c78760a7bd2e493528"
+
+# Konfigurasi R2 Bucket
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "kontrakpro-documents"
