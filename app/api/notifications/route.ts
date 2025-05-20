@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { NotificationStatus } from '@/lib/types/notification';
 
+export const runtime = 'edge';
+
 // Mock notifications data
 const mockNotifications = [
   {

@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 // app/dashboard/contracts/[id]/analyze/page.tsx
 
 import AnalyzeContractClientComponent from './analyze-contract-client'

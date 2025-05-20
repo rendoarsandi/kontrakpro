@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { NotificationDropdown } from "@/components/notifications/notification-dropdown"
 import { UserNav } from "@/components/user-nav"
 
+export const runtime = 'edge';
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
