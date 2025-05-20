@@ -1,8 +1,6 @@
 "use client"; // This should be the very first line
 
-import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react";
+import { useState } from "react";import Link from "next/link";import { ArrowLeft, Check, ChevronRight, ExternalLink, Info } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -432,39 +430,41 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                   </Alert>
                   <div className="space-y-4"></div>
  <div className="flex items-center gap-2"></div>
- <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-4 w-4" />
- </div>
- <p className="font-medium">Step 1: Prepare your {integration.name} account</p>
- <p className="text-sm text-muted-foreground">
-                          Ensure you have the necessary permissions in your {integration.name} account.
- </p>
- </div>
- </div>
  <div className="flex items-center gap-2">
- <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Check className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Step 1: Prepare your {integration.name} account</p>
+                        <p className="text-sm text-muted-foreground">
+                          Ensure you have the necessary permissions in your {integration.name} account.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary">
                         2
                       </div>
                       <div className="flex-1">
- <p className="font-medium">Step 2: Provide API credentials</p>
- <p className="text-sm text-muted-foreground"></p>
- </div>
- </div>
- <div className="flex items-center gap-2">
+                        <p className="font-medium">Step 2: Provide API credentials</p>
+                        <p className="text-sm text-muted-foreground"></p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full border">3</div>
                       <div className="flex-1">
- <p className="font-medium">Step 3: Configure data mapping</p>
- <p className="text-sm text-muted-foreground">
+                        <p className="font-medium">Step 3: Configure data mapping</p>
+                        <p className="text-sm text-muted-foreground">
                           Map fields between KontrakPro and {integration.name}.
- </p>
- </div>
- </div>
- </div>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {/* Connection Step 2: API Credentials */}
               {connectionStep === 2 && (
-                <CardContent>
+                <CardContent> 
                   <CRMAccountForm integrationId={integration.id} setConnectionStep={setConnectionStep} />
                 </CardContent>
               )}
@@ -487,9 +487,9 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                           {syncSettings.map((setting) => (
                             <div key={setting.id} className="flex items-center justify-between">
                               <div className="space-y-0.5">
-    <Label htmlFor={setting.id}>{setting.name}</Label>
-    <p className="text-sm text-muted-foreground">{setting.description}</p>
-    </div>
+                                <Label htmlFor={setting.id}>{setting.name}</Label>
+                                <p className="text-sm text-muted-foreground">{setting.description}</p>
+                              </div>
     <Switch
                                 id={setting.id}
                                 checked={setting.enabled}
@@ -517,7 +517,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                         <Select defaultValue="bidirectional">
                           <SelectTrigger className="w-[280px]">
                             <SelectValue placeholder="Select sync direction" />
-                          </SelectTrigger>
+                          </SelectTrigger> 
     <SelectContent>
     <SelectItem value="bidirectional">Bi-directional (both systems)</SelectItem>
                             <SelectItem value="kontrakpro-to-crm">KontrakPro to {integration.name} only</SelectItem>
@@ -537,7 +537,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                           <Select defaultValue="15">
                             <SelectTrigger className="w-[280px]">
                               <SelectValue placeholder="Select sync frequency" />
-                            </SelectTrigger>
+                            </SelectTrigger> 
     <SelectContent>
     <SelectItem value="5">Every 5 minutes</SelectItem>
                               <SelectItem value="15">Every 15 minutes</SelectItem>
@@ -579,10 +579,10 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                   )}
                   {/* End Advanced Settings Section */}
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setConnectionStep(2)}>
+                    <Button variant="outline" onClick={() => setConnectionStep(2)}> 
                       Back
-                    </div>
-                    <Button onClick={() => alert(`Integration with ${integration.name} completed!`)}>
+                    </Button>
+                    <Button onClick={() => alert(`Integration with ${integration.name} completed!`)}> 
                       Complete Integration
                     </Button>
                   </div>
@@ -592,7 +592,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
 
           <Tabs defaultValue="features" className="space-y-4">
             <TabsList>
- <TabsTrigger value="features">Features</TabsTrigger>
+              <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="data-mapping">Data Mapping</TabsTrigger>
               <TabsTrigger value="faq">FAQ</TabsTrigger>
             </TabsList>
@@ -600,7 +600,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
               <Card>
                 <CardHeader>
  <CardTitle>Integration Features</CardTitle>
-                  <CardDescription>Here's what you can do with the {integration.name} integration</CardDescription>
+                  <CardDescription>Here's what you can do with the {integration.name} integration</CardDescription> 
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
@@ -618,14 +618,14 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
               <Card>
                 <CardHeader>
  <CardTitle>Data Mapping</CardTitle>
-                  <CardDescription>See how data is mapped between KontrakPro and {integration.name}</CardDescription>
+                  <CardDescription>See how data is mapped between KontrakPro and {integration.name}</CardDescription> 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     {integration.dataMapping.entities.map((entity, index) => (
                       <div key={index} className="space-y-2">
  <h3 className="text-lg font-medium">{entity.name} Mapping</h3>
-                        <div className="rounded-md border">
+                        <div className="rounded-md border"> 
                           <table className="min-w-full divide-y divide-border">
                             <thead>
                               <tr className="bg-muted/50">
