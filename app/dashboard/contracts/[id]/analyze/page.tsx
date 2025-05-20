@@ -1,4 +1,3 @@
-\
 // app/dashboard/contracts/[id]/analyze/page.tsx
 
 // This function tells Next.js which paths to pre-render for this dynamic route.
