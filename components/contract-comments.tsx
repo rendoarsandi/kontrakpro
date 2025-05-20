@@ -1,6 +1,6 @@
-typescriptreact
 "use client";
-import { Textarea } from "@/components/ui/textarea";
+typescriptreact
+;import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
