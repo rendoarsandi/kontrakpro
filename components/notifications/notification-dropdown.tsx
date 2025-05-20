@@ -23,6 +23,7 @@ import { getNotificationIcon } from "@/lib/utils/notification-utils"
 export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
 
@@ -31,12 +32,20 @@ export function NotificationDropdown() {
     try {
       setLoading(true)
       const data = await api.getNotifications()
+      if (data.error) {
+        console.error("API Error:", data.error)
+        setNotifications([])
+        setUnreadCount(0)
+        return
+      }
       setNotifications(data.notifications || [])
       setUnreadCount(
         (data.notifications || []).filter((n: Notification) => n.status === NotificationStatus.UNREAD).length
       )
     } catch (error) {
       console.error("Error fetching notifications:", error)
+      setNotifications([])
+      setUnreadCount(0)
     } finally {
       setLoading(false)
     }

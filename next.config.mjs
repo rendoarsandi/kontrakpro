@@ -6,10 +6,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Konfigurasi untuk Cloudflare Pages
-  output: 'export',
+  // Konfigurasi untuk production
   images: {
-    unoptimized: true,
+    domains: ['placeholder.com'], // Sesuaikan dengan domain gambar yang digunakan
   },
   trailingSlash: true,
 }

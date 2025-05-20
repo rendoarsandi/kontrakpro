@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink, RefreshCw, Search, User, Building, FileText } from "lucide-react"
 
@@ -14,8 +14,59 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
+interface Contact {
+  id: string
+  name: string
+  title: string
+  email: string
+  phone: string
+  lastActivity: string
+  url: string
+}
+
+interface CrmData {
+  integration: {
+    name: string
+    icon: string
+    lastSync: string
+  }
+  contract: {
+    id: string
+    name: string
+    type: string
+    stage: string
+    amount: string
+    probability: string
+    closeDate: string
+    owner: string
+    url: string
+  }
+  company: {
+    id: string
+    name: string
+    industry: string
+    type: string
+    website: string
+    employees: string
+    revenue: string
+    address: string
+    phone: string
+    url: string
+  }
+  contacts: Contact[]
+  activities: Array<{
+    id: string
+    type: string
+    subject: string
+    date: string
+    description: string
+    related: string
+    url: string
+  }>
+}
+
 // Mock data for CRM data
-const crmData = {
+const crmData: CrmData = {
   integration: {
     name: "Salesforce",
     icon: "/placeholder.svg?height=40&width=40",
@@ -106,6 +157,7 @@ const crmData = {
 
 export default function ContractCrmPage({ params }: { params: { id: string } }) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   // Filter contacts based on search query
   const filteredContacts = crmData.contacts.filter(

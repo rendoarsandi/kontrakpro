@@ -5,7 +5,15 @@
  */
 
 // URL API dari environment variable atau default
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://kontrakpro-api.your-username.workers.dev';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
+// Helper untuk mendapatkan full URL
+const getApiUrl = (path: string) => {
+  if (API_URL) {
+    return `${API_URL}${path}`;
+  }
+  return path; // Gunakan relative URL untuk development
+};
 
 // Tipe untuk respons pagination
 interface PaginationResponse {
@@ -235,26 +243,29 @@ export const api = {
   },
 
   // Notifications
-  getNotifications: async (params: {
-    limit?: number;
-    offset?: number;
-    status?: string;
-  } = {}) => {
-    const queryString = new URLSearchParams(params as Record<string, string>).toString();
-    const response = await fetch(`${API_URL}/api/notifications?${queryString}`, {
-      headers: getAuthHeaders()
-    });
-
-    return handleResponse(response);
+  getNotifications: async () => {
+    try {
+      const response = await fetch(getApiUrl('/api/notifications'), {
+        headers: getAuthHeaders(),
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return { notifications: [], error: 'Failed to fetch notifications' };
+    }
   },
 
   markNotificationAsRead: async (id: string) => {
-    const response = await fetch(`${API_URL}/api/notifications/${id}/read`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
-    });
-
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw new Error('Failed to mark notification as read');
+    }
   },
 
   // Reminders
