@@ -32,6 +32,7 @@ import { PDFExportModal } from "@/components/pdf/pdf-export-modal"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import ContractComments from "@/components/contract-comments"
 
 export default function ContractDetailsPage({ params }: { params: { id: string } }) {
   const [commentText, setCommentText] = useState("")
@@ -225,44 +226,7 @@ export default function ContractDetailsPage({ params }: { params: { id: string }
                 </TabsList>
                 <TabsContent value="comments" className="mt-4 space-y-4">
                   <Card>
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        {contract.comments.map((comment) => (
-                          <div key={comment.id} className="flex gap-4">
-                            <Avatar>
-                              <AvatarImage src={comment.avatar || "/placeholder.svg"} alt={comment.user} />
-                              <AvatarFallback>{comment.user.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{comment.user}</span>
-                                <span className="text-xs text-muted-foreground">{comment.date}</span>
-                              </div>
-                              <p className="text-sm">{comment.text}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-start gap-3 pt-0">
-                      <Separator />
-                      <div className="flex w-full gap-4">
-                        <Avatar>
-                          <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-2">
-                          <Textarea
-                            placeholder="Add a comment..."
-                            className="min-h-[80px]"
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                          />
-                          <Button onClick={handleAddComment} disabled={!commentText.trim()}>
-                            Add Comment
-                          </Button>
-                        </div>
-                      </div>
-                    </CardFooter>
+                   <ContractComments contractId={contract.id} initialComments={contract.comments} />
                   </Card>
                 </TabsContent>
                 <TabsContent value="history" className="mt-4">

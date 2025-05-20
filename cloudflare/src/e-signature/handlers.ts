@@ -19,6 +19,7 @@ export async function createSignatureRequestHandler(request: AuthenticatedReques
     }
 
     // TODO: Validasi apakah user memiliki akses ke kontrak
+    // TODO: Create e-signature request in database
     // const user = request.user;
     // if (!user) {
     //   return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -53,6 +54,80 @@ export async function createSignatureRequestHandler(request: AuthenticatedReques
   } catch (error: any) {
     console.error('Error creating signature request:', error);
     return new Response(JSON.stringify({ error: error.message || 'Failed to create signature request' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Handler untuk memulai proses penandatanganan
+export async function initiateSigningProcessHandler(request: AuthenticatedRequest, env: Env): Promise<Response> {
+  try {
+    const requestId = (request as any).params?.id;
+
+    if (!requestId) {
+      return new Response(JSON.stringify({ error: 'Missing request_id parameter' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TODO: Validasi apakah user memiliki akses untuk memulai proses ini
+    // TODO: Validasi apakah request ada dan dalam status yang valid (misal: 'pending', belum dimulai)
+    // TODO: Ambil data request dan signers dari database
+    // TODO: Dapatkan dokumen yang akan ditandatangani (misal dari R2)
+    // TODO: Interaksi dengan penyedia tanda tangan elektronik (misal DocuSign, Adobe Sign)
+    // Ini melibatkan mengirim dokumen, daftar penandatangan, dan konfigurasi lainnya ke API penyedia.
+    // Penyedia akan mengembalikan URL atau ID untuk memulai proses penandatanganan.
+
+    console.log(`TODO: Integrate with e-signature provider for request ${requestId}`);
+
+    // TODO: Update status request menjadi 'in_progress' di database dan simpan provider_request_id/url jika ada
+    // TODO: Call the e-signature provider API (e.g., send document, signers)
+    const signingUrl = `mock_signing_url_for_request_${requestId}`; // Replace with actual URL from provider
+    // Placeholder respons
+    return new Response(JSON.stringify({
+      request_id: requestId,
+      status: 'in_progress',
+      signing_url: `mock_signing_url_for_request_${requestId}`, // URL dari provider
+      message: 'Signing process initiated (integration pending)',
+    }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: any) {
+    console.error('Error initiating signing process:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to initiate signing process' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Handler untuk menerima callback dari penyedia tanda tangan elektronik
+// Endpoint ini akan diakses oleh penyedia tanda tangan setelah event tertentu (misal: dokumen dilihat, ditandatangani, ditolak, selesai)
+export async function handleSignatureCallback(request: Request, env: Env): Promise<Response> {
+  // This handler is specifically for receiving data *from* the e-signature provider.
+  try {
+    // TODO: Implementasi verifikasi callback dari provider (misal: cek signature, IP whitelist)
+    // TODO: Parse payload dari provider. Format payload sangat tergantung pada penyedia.
+    const eventPayload = await request.json();
+
+    console.log('Received signature callback:', eventPayload);
+
+    // TODO: Ambil provider_request_id dari payload
+    // TODO: Cari e_signature_request yang sesuai di database berdasarkan provider_request_id
+    // TODO: Update status e_signature_request dan/atau e_signature_signers berdasarkan eventPayload
+    // TODO: Jika dokumen selesai ditandatangani, dapatkan salinan dokumen yang ditandatangani dari provider dan simpan di R2.
+    // TODO: Panggil logika bukti tanda tangan aman untuk dokumen yang sudah ditandatangani.
+
+    // Beri respons sukses ke provider
+    return new Response('Callback received successfully', { status: 200 });
+
+  } catch (error: any) {
+    console.error('Error handling signature callback:', error);
+    // Penting untuk memberikan respons yang sesuai agar provider tidak terus mencoba mengirim callback
+    return new Response(JSON.stringify({ error: error.message || 'Failed to process callback' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -191,6 +266,29 @@ export async function updateSignerStatusHandler(request: AuthenticatedRequest, e
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Langkah 1: Implementasi Logika Verifikasi Identitas
+    // Ini adalah placeholder. Implementasi nyata akan tergantung pada metode verifikasi
+    // yang digunakan (misalnya, email verification link, SMS code, integration with identity provider).
+    // Untuk demonstrasi, kita akan menambahkan TODO di sini.
+    // TODO: Implementasi logika verifikasi identitas penandatangan sebelum memungkinkan mereka menandatangani.
+    // Ini bisa melibatkan:
+    // 1. Mengirim link unik atau kode ke email/nomor telepon signer.
+    // 2. Meminta signer login atau mengautentikasi melalui metode lain.
+    // 3. Membandingkan data yang diberikan dengan data yang sudah ada (jika tersedia).
+    console.log(`TODO: Implement identity verification for signer ${signerId} for request ${requestId}`);
+
+    // Jika verifikasi gagal, kembalikan respons error
+    // if (!isIdentityVerified) {
+    //   return new Response(JSON.stringify({ error: 'Signer identity not verified' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    // } // closing brace was misplaced
+
+    // Langkah 2: Implementasi Logika Bukti Tanda Tangan yang Aman
+    // Ini melibatkan:
+    // a) Mendapatkan konten dokumen yang ditandatangani (misalnya dari signed_document_key R2)
+    // b) Menghasilkan hash dari konten dokumen tersebut
+    // c) Menyimpan hash bersama dengan detail tanda tangan (siapa, kapan, status)
+    console.log(`TODO: Implement secure proof of signature for signer ${signerId} for request ${requestId}`);
 
     // Validasi status yang diperbolehkan: 'signed', 'declined'
     if (!['signed', 'declined'].includes(status)) {

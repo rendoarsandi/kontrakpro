@@ -9,7 +9,7 @@ import { ArrowLeft, ExternalLink, RefreshCw, Search, User, Building, FileText } 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -157,13 +157,28 @@ const crmData: CrmData = {
   ],
 }
 
+// Assume a fetch function exists to get contract and CRM data
+// async function fetchIntegratedData(contractId: string): Promise<{ contract: any, crmData: CrmData }> {
+//   // Replace with actual API calls
+//   const contractResponse = await fetch(`/api/contracts/${contractId}`);
+//   const contractData = await contractResponse.json();
+
+//   const crmResponse = await fetch(`/api/crm/contract/${contractId}`); // Assuming an endpoint like this
+//   const crmData = await crmResponse.json();
+
+//   return { contract: contractData, crmData: crmData };
+// }
+
 export default function ContractCrmPage({ params }: { params: { id: string } }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  // const [contract, setContract] = useState<any>(null);
+  // const [crmData, setCrmData] = useState<CrmData | null>(null);
 
   // Filter contacts based on search query
   const filteredContacts = crmData.contacts.filter(
     (contact) =>
+      // Replace crmData with fetchedCrmData if using API call
       contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -173,6 +188,18 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
+          {/* {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+              <span className="sr-only">Loading CRM data...</span>
+            </div>
+          )} */}
+          {/* Add an error message display if needed */}
+          {/* {!crmData && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+              <p className="text-muted-foreground">Could not load CRM data for this contract.</p>
+            </div>
+          )} */}
           <Button variant="ghost" size="icon" asChild className="mr-2">
             <Link href={`/dashboard/contracts/${params.id}`}>
               <ArrowLeft className="h-4 w-4" />
@@ -187,13 +214,15 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
           </div>
           <div className="ml-auto flex items-center gap-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              {/* Replace crmData.integration with fetchedCrmData.integration */}
               <img
                 src={crmData.integration.icon || "/placeholder.svg"}
                 alt={crmData.integration.name}
                 className="h-5 w-5"
               />
+              {/* Replace crmData.integration with fetchedCrmData.integration */}
               <span>Connected to {crmData.integration.name}</span>
-              <Badge variant="outline" className="ml-2">
+              <Badge variant="outline" className="ml-2"> {/* Replace crmData.integration with fetchedCrmData.integration */}
                 Last synced: {crmData.integration.lastSync}
               </Badge>
             </div>
@@ -220,12 +249,14 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <div className="space-y-1">
                       <CardTitle>Contract in {crmData.integration.name}</CardTitle>
+                      {/* Replace crmData.integration with fetchedCrmData.integration */}
                       <CardDescription>How this contract appears in your CRM</CardDescription>
                     </div>
                     <FileText className="h-5 w-5 text-muted-foreground" />
                   </CardHeader>
                   <CardContent className="pt-4">
                     <div className="space-y-4">
+                      {/* Replace crmData.contract with fetchedCrmData.contract */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <p className="text-sm font-medium text-muted-foreground">CRM ID</p>
@@ -255,6 +286,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                       <Button variant="outline" size="sm" asChild className="w-full mt-4">
                         <a
                           href={crmData.contract.url}
+                          // Replace crmData.contract with fetchedCrmData.contract
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1"
@@ -271,6 +303,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <div className="space-y-1">
                       <CardTitle>Company Information</CardTitle>
+                      {/* Replace crmData.integration with fetchedCrmData.integration */}
                       <CardDescription>Company details from your CRM</CardDescription>
                     </div>
                     <Building className="h-5 w-5 text-muted-foreground" />
@@ -278,6 +311,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                   <CardContent className="pt-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
+                        {/* Replace crmData.company with fetchedCrmData.company */}
                         <div className="space-y-1">
                           <p className="text-sm font-medium text-muted-foreground">Company Name</p>
                           <p>{crmData.company.name}</p>
@@ -306,13 +340,14 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                       <div className="space-y-1 mt-2">
                         <p className="text-sm font-medium text-muted-foreground">Address</p>
                         <p>{crmData.company.address}</p>
+                        {/* Replace crmData.company with fetchedCrmData.company */}
                       </div>
                       <Button variant="outline" size="sm" asChild className="w-full mt-4">
                         <a
                           href={crmData.company.url}
+                          // Replace crmData.company with fetchedCrmData.company
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1"
                         >
                           View in {crmData.integration.name}
                           <ExternalLink className="h-3 w-3 ml-1" />
@@ -330,6 +365,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6 md:grid-cols-3">
+                    {/* Replace crmData.contacts.slice(0, 3) with fetchedCrmData.contacts.slice(0, 3) */}
                     {crmData.contacts.slice(0, 3).map((contact) => (
                       <div key={contact.id} className="flex flex-col items-center text-center p-4 border rounded-lg">
                         <Avatar className="h-16 w-16 mb-2">
@@ -349,6 +385,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                         <Button variant="ghost" size="sm" asChild className="mt-4">
                           <a
                             href={contact.url}
+                            // Replace contact.url with fetched contact url
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1"
@@ -375,6 +412,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {/* Replace crmData.activities.slice(0, 3) with fetchedCrmData.activities.slice(0, 3) */}
                     {crmData.activities.slice(0, 3).map((activity) => (
                       <div key={activity.id} className="flex items-start gap-4 p-4 border rounded-lg">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -393,6 +431,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                         </div>
                         <Button variant="ghost" size="sm" asChild>
                           <a href={activity.url} target="_blank" rel="noopener noreferrer">
+                            {/* Replace activity.url with fetched activity url */}
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </Button>
@@ -414,6 +453,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                       <CardTitle>Contacts</CardTitle>
+                      {/* Replace crmData.integration with fetchedCrmData.integration */}
                       <CardDescription>
                         All contacts associated with this contract in {crmData.integration.name}
                       </CardDescription>
@@ -450,6 +490,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
+                        {/* Replace filteredContacts with filteredFetchedContacts */}
                         {filteredContacts.map((contact) => (
                           <tr key={contact.id}>
                             <td className="px-4 py-3 text-sm">{contact.name}</td>
@@ -459,6 +500,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                             <td className="px-4 py-3 text-sm">{contact.lastActivity}</td>
                             <td className="px-4 py-3 text-sm text-right">
                               <Button variant="ghost" size="sm" asChild>
+                                {/* Replace contact.url with fetched contact url */}
                                 <a href={contact.url} target="_blank" rel="noopener noreferrer">
                                   <ExternalLink className="h-4 w-4" />
                                 </a>
@@ -479,6 +521,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                       <CardTitle>Activities</CardTitle>
+                      {/* Replace crmData.integration with fetchedCrmData.integration */}
                       <CardDescription>
                         All activities related to this contract in {crmData.integration.name}
                       </CardDescription>
@@ -504,6 +547,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {/* Replace crmData.activities with fetchedCrmData.activities */}
                     {crmData.activities.map((activity) => (
                       <div key={activity.id} className="flex items-start gap-4 p-4 border rounded-lg">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -522,6 +566,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                         </div>
                         <Button variant="ghost" size="sm" asChild>
                           <a href={activity.url} target="_blank" rel="noopener noreferrer">
+                            {/* Replace activity.url with fetched activity url */}
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </Button>
@@ -536,7 +581,9 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
               <Card>
                 <CardHeader>
                   <CardTitle>Sync Settings</CardTitle>
+                  {/* Replace crmData.integration with fetchedCrmData.integration */}
                   <CardDescription>Configure how this contract syncs with {crmData.integration.name}</CardDescription>
+                  {/* Replace crmData.integration with fetchedCrmData.integration */}
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
@@ -548,6 +595,7 @@ export default function ContractCrmPage({ params }: { params: { id: string } }) 
                             <th className="px-4 py-3 text-left text-sm font-medium">KontrakPro Field</th>
                             <th className="px-4 py-3 text-left text-sm font-medium">
                               {crmData.integration.name} Field
+                              {/* Replace crmData.integration with fetchedCrmData.integration */}
                             </th>
                             <th className="px-4 py-3 text-left text-sm font-medium">Sync Direction</th>
                           </tr>

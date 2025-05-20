@@ -30,14 +30,12 @@ export async function addCommentHandler(request: AuthenticatedRequest, env: Env)
     const id = generateId();
     const now = Date.now();
 
-    // TODO: Simpan komentar ke database (tabel comments) setelah masalah migrasi D1 teratasi.
-    //       Perhatikan field parent_comment_id untuk threading.
-    // await env.DB.prepare(
-    //   `INSERT INTO comments (id, contract_id, user_id, content, parent_comment_id, created_at)
-    //    VALUES (?, ?, ?, ?, ?, ?)`
-    // )
-    // .bind(id, contract_id, user.id, content, parent_comment_id || null, now)
-    // .run();
+    await env.DB.prepare(
+      `INSERT INTO comments (id, contract_id, user_id, content, parent_comment_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+    .bind(id, contract_id, user.id, content, parent_comment_id || null, now)
+    .run();
 
     return new Response(JSON.stringify({
       id,
@@ -45,8 +43,7 @@ export async function addCommentHandler(request: AuthenticatedRequest, env: Env)
       user_id: user.id,
       content,
       parent_comment_id: parent_comment_id || null,
-      created_at: now,
-      message: 'Comment added (database operation skipped)'
+      created_at: now
     }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
@@ -75,15 +72,13 @@ export async function getCommentsHandler(request: AuthenticatedRequest, env: Env
 
     // TODO: Validasi apakah user memiliki akses ke kontrak ini
 
-    // TODO: Ambil komentar dari database, mungkin dengan join ke tabel users untuk info user.
-    //       Urutkan berdasarkan created_at. Handle threading jika diperlukan.
-    // const { results: comments } = await env.DB.prepare(
-    //   `SELECT c.*, u.name as user_name, u.email as user_email 
-    //    FROM comments c JOIN users u ON c.user_id = u.id 
-    //    WHERE c.contract_id = ? ORDER BY c.created_at ASC`
-    // )
-    // .bind(contractId)
-    // .all();
+    const { results: comments } = await env.DB.prepare(
+      `SELECT c.*, u.name as user_name, u.email as user_email 
+       FROM comments c JOIN users u ON c.user_id = u.id 
+       WHERE c.contract_id = ? ORDER BY c.created_at ASC`
+    )
+    .bind(contractId)
+    .all();
 
     return new Response(JSON.stringify({
       comments: [], // comments
@@ -99,6 +94,57 @@ export async function getCommentsHandler(request: AuthenticatedRequest, env: Env
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+export async function updateCommentHandler(request: AuthenticatedRequest, env: Env): Promise<Response> {
+  try {
+    const { params } = request;
+    const commentId = params.id;
+    const { content } = await request.json() as { content: string };
+    const user = request.user;
+
+    if (!user || !user.id) {
+      return new Response(JSON.stringify({ error: 'User not authenticated' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!content) {
+      return new Response(JSON.stringify({ error: 'Missing content' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TODO: Validasi bahwa user adalah pemilik komentar
+
+    await env.DB.prepare(
+      `UPDATE comments SET content = ? WHERE id = ? AND user_id = ?`
+    )
+    .bind(content, commentId, user.id)
+    .run();
+
+    return new Response(JSON.stringify({ message: 'Comment updated successfully' }));
+
+  } catch (error: any) {
+    console.error('Error updating comment:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to update comment' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
+
+export async function deleteCommentHandler(request: AuthenticatedRequest, env: Env): Promise<Response> {
+  // TODO: Implementasi handler untuk delete komentar.
+  //       Sertakan validasi bahwa user adalah pemilik komentar atau memiliki izin admin.
+  //       Hapus komentar dari database.
+  return new Response(JSON.stringify({ message: 'Delete comment handler not implemented' }), {
+    status: 501, // Not Implemented
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// TODO: Implementasikan real-time (WebSockets) untuk kolaborasi
 
 // TODO: Implementasikan handler untuk update/delete komentar, real-time (WebSockets), dll.

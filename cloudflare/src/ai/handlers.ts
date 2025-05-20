@@ -1,6 +1,15 @@
-import { Env } from '../index';
+import { Env } from '../index'; // Adjust the import path as necessary
 
 // Placeholder untuk tipe Request dengan user
+// Asumsi Env memiliki binding untuk Cloudflare Workers AI:
+// [[ai]]
+// binding = "AI"
+
+interface RagResponse {
+  results: { response: string };
+  usage: any; // Define a more specific type if needed
+}
+
 interface AuthenticatedRequest extends Request {
   user?: { id: string };
 }
@@ -17,24 +26,21 @@ export async function analyzeContractRiskHandler(request: AuthenticatedRequest, 
     }
 
     let contentToAnalyze = contract_content;
-
     if (contract_id && !contract_content) {
-      // TODO: Ambil konten kontrak dari database atau R2 berdasarkan contract_id
-      // const { results: versions } = await env.DB.prepare(
-      //   `SELECT content FROM contract_versions WHERE contract_id = ? ORDER BY version DESC LIMIT 1`
-      // )
-      // .bind(contract_id)
-      // .all();
-      // if (versions.length > 0) {
-      //   contentToAnalyze = versions[0].content;
-      // } else {
-      //   return new Response(JSON.stringify({ error: 'Contract content not found for analysis' }), {
-      //     status: 404,
-      //     headers: { 'Content-Type': 'application/json' },
-      //   });
-      // }
-      contentToAnalyze = "Mock contract content for AI analysis. This contract has a high-risk indemnification clause."; // Placeholder
-    }
+      // Ambil konten kontrak dari database atau R2 berdasarkan contract_id
+      const { results } = await env.DB.prepare(
+        `SELECT content FROM contract_versions WHERE contract_id = ? ORDER BY version DESC LIMIT 1`
+      )
+      .bind(contract_id)
+      .all<{ content: string }>();
+
+      if (results.length > 0 && results[0].content) {
+        contentToAnalyze = results[0].content;
+      } else {
+        return new Response(JSON.stringify({ error: `Contract content not found for contract_id: ${contract_id}` }), {
+          status: 404, headers: { 'Content-Type': 'application/json' },
+        });
+      }    }
 
     if (!contentToAnalyze) {
         return new Response(JSON.stringify({ error: 'No content available for analysis' }), {
@@ -43,14 +49,23 @@ export async function analyzeContractRiskHandler(request: AuthenticatedRequest, 
         });
     }
 
-    // TODO: Implementasikan logika integrasi dengan layanan AI (misalnya, OpenAI, Vertex AI)
-    // 1. Kirim `contentToAnalyze` ke model AI.
-    // 2. Minta model untuk mengidentifikasi potensi risiko, klausul ambigu, dll.
-    // 3. Proses respons dari AI.
+    // Implementasikan logika integrasi dengan layanan AI (misalnya, Cloudflare Workers AI)
+    const aiPrompt = `Analyze the following contract content for potential risks and compliance issues.
+    Identify key risks and summarize them, providing a risk level (low, medium, high).
+    Suggest specific recommendations to mitigate these risks.
+    Return the analysis in a structured JSON format with fields: risk_score (0-1), identified_risks (array of {clause, risk_level, summary}), and recommendations (array of strings).
 
-    // Placeholder response
-    const mockAiResponse = {
-      risk_score: 0.75, // Contoh skor risiko (0-1)
+    Contract Content:\n\n${contentToAnalyze}`;
+
+    const aiResponse = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
+      prompt: aiPrompt
+    }) as RagResponse; // Assuming the AI model returns a 'response' field
+
+    // Attempt to parse the AI's JSON response
+    let analysisResult: any;
+    try {
+      // Clean up the AI response string if it includes markdown or extra text
+      const jsonString = aiResponse.results.response.replace(/
       identified_risks: [
         { clause: "Indemnification", risk_level: "high", summary: "The indemnification clause is overly broad and exposes the company to significant liability." },
         { clause: "Termination", risk_level: "medium", summary: "Termination for convenience clause lacks a notice period." },
@@ -241,6 +256,43 @@ export async function detectAnomalyHandler(request: AuthenticatedRequest, env: E
   } catch (error: any) {
     console.error('Error performing AI anomaly detection:', error);
     return new Response(JSON.stringify({ error: error.message || 'Failed to perform AI anomaly detection' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// New handler for general AI analysis requests
+export async function performAIAnalysisHandler(request: AuthenticatedRequest, env: Env): Promise<Response> {
+  try {
+    const { type, data } = await request.json() as { type: string, data: any };
+
+    if (!type || !data) {
+      return new Response(JSON.stringify({ error: 'Missing type or data in analysis request' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TODO: Implement logic to route analysis based on 'type'.
+    // This could call one of the existing handlers or a new AI service function.
+    console.log(`Received AI analysis request of type: ${type} with data:`, data);
+
+    // Placeholder response
+    const mockAiResponse = {
+      status: 'received',
+      type: type,
+      processed_data: data, // In a real scenario, this would be the processed result
+      message: `Analysis request of type "${type}" received and processed (mocked response).`,
+    };
+
+    return new Response(JSON.stringify(mockAiResponse), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: any) {
+    console.error('Error performing general AI analysis:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to perform general AI analysis' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

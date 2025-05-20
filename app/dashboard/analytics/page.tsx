@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect } from "react"
 import { Calendar, Download, FileText, Filter, PieChart, RefreshCw, Search, Share2, Sliders } from "lucide-react"
 import { AnalyticsProvider, useAnalytics } from "@/components/providers/analytics-provider"
@@ -33,14 +32,6 @@ import { ComplianceScoreChart } from "@/components/charts/compliance-score-chart
 import { ContractMetricsTable } from "@/components/tables/contract-metrics-table"
 import { DashboardMetricCard } from "@/components/dashboard-metric-card"
 import { MetricCardWithData } from "@/components/metrics/metric-card-with-data"
-
-function AnalyticsDashboard() {
-  const { timeRange, setTimeRange, refreshData, loading } = useAnalytics()
-
-  const handleRefresh = async () => {
-    await refreshData()
-  }
-}
 
 export default function AnalyticsDashboardPage() {
   return (

@@ -143,13 +143,14 @@ export default function WorkflowBuilderPage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="approval">Approval</SelectItem>
+                              <SelectItem value="condition">Condition</SelectItem>
                               <SelectItem value="review">Review</SelectItem>
                               <SelectItem value="notification">Notification</SelectItem>
                               <SelectItem value="signature">Signature</SelectItem>
                             </SelectContent>
                           </Select>
                           <Input
-                            placeholder="Step Name"
+                            placeholder={step.type === "condition" ? "Condition Name" : "Step Name"}
                             value={step.name}
                             onChange={(e) => updateStep(step.id, "name", e.target.value)}
                             className="max-w-[250px]"
@@ -164,32 +165,41 @@ export default function WorkflowBuilderPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label>Assignee</Label>
-                          <Select
-                            value={step.assignee}
-                            onValueChange={(value) => updateStep(step.id, "assignee", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select assignee" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="legal-team">Legal Team</SelectItem>
-                              <SelectItem value="finance-team">Finance Team</SelectItem>
-                              <SelectItem value="department-head">Department Head</SelectItem>
-                              <SelectItem value="executive">Executive</SelectItem>
-                              <SelectItem value="contract-owner">Contract Owner</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      {step.type !== "condition" ? (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label>Assignee</Label>
+                            <Select
+                              value={step.assignee}
+                              onValueChange={(value) => updateStep(step.id, "assignee", value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select assignee" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="legal-team">Legal Team</SelectItem>
+                                <SelectItem value="finance-team">Finance Team</SelectItem>
+                                <SelectItem value="department-head">Department Head</SelectItem>
+                                <SelectItem value="executive">Executive</SelectItem>
+                                <SelectItem value="contract-owner">Contract Owner</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Time Limit (Days)</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={step.timeLimit}
+                              onChange={(e) => updateStep(step.id, "timeLimit", e.target.value)}
+                            />
+                          </div>
                         </div>
+                      ) : (
                         <div className="space-y-2">
-                          <Label>Time Limit (Days)</Label>
+                          <Label>Condition Logic</Label>
                           <Input
-                            type="number"
-                            min="1"
-                            value={step.timeLimit}
-                            onChange={(e) => updateStep(step.id, "timeLimit", e.target.value)}
+                            placeholder="e.g., contract value > 100000"
                           />
                         </div>
                       </div>

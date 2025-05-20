@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import { CRMAccountForm } from "./crm-account-form";
+
 // Define types for CRM Integration data
 interface CRMField {
   kontrakpro: string;
@@ -336,13 +338,34 @@ const crmIntegrations: CRMIntegrations = {
       },
     ],
   },
+  custom: {
+    id: "custom",
+    name: "Custom CRM",
+    description: "Connect a custom CRM system using webhooks and a generic API.",
+    icon: "/placeholder.svg?height=80&width=80",
+    website: "#",
+    features: [
+      "Configurable webhooks for real-time updates",
+      "Flexible data mapping",
+      "Basic bi-directional sync",
+    ],
+    dataMapping: {
+      entities: [
+        // Custom mapping fields can be defined or discovered here
+        { name: "Generic Object", fields: [] }
+      ],
+    },
+    syncSettings: [], // Custom sync settings would be configured dynamically
+    advancedSettings: { // Add advanced settings structure
+      webhookUrl: "https://your-kontrakpro-instance.com/api/integrations/crm/webhook/custom",
+      apiKeyName: "X-CRM-Webhook-Secret",
+    }
+  }
 };
 
 export default function IntegrationDetailPage({ params }: { params: { id: string } }) {
   const [connectionStep, setConnectionStep] = useState(1);
   const [apiKey, setApiKey] = useState("");
-  const [instance, setInstance] = useState("");
-  
   // Get integration data based on ID, ensuring params.id is a valid key
   const integrationId = params.id as keyof CRMIntegrations;
   const currentIntegration = crmIntegrations[integrationId];
@@ -360,21 +383,8 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
     dataMapping: { entities: [] as CRMEntity[] }, // Ensure entities is typed
     syncSettings: [] as CRMSyncSetting[], // Ensure syncSettings is typed
   };
+  const isCustomIntegration = integration.id === 'custom';
 
-  const handleSyncSettingChange = (id: string, enabled: boolean) => {
-    setSyncSettings(syncSettings.map((setting: CRMSyncSetting) => (setting.id === id ? { ...setting, enabled } : setting)));
-  }
-
-  const handleConnect = () => {
-    if (connectionStep === 1) {
-      setConnectionStep(2)
-    } else if (connectionStep === 2) {
-      setConnectionStep(3)
-    } else {
-      // In a real app, this would send the connection details to an API
-      alert(`Connected to ${integration.name} successfully!`)
-    }
-  }
 
   return (
     <div className="container py-6 space-y-8">
@@ -409,135 +419,110 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                 Follow these steps to connect your {integration.name} account with KontrakPro
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {connectionStep === 1 && (
+            {/* Connection Step 1: Overview */}
+            {connectionStep === 1 && (
+              <CardContent>
                 <div className="space-y-6">
                   <Alert>
                     <Info className="h-4 w-4" />
                     <AlertTitle>Before you begin</AlertTitle>
                     <AlertDescription>
                       You'll need administrator access to your {integration.name} account to complete this integration.
-                    </AlertDescription>
+ </AlertDescription>
                   </Alert>
-
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+ <div className="flex items-center gap-2">
+ <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">Step 1: Prepare your {integration.name} account</p>
-                        <p className="text-sm text-muted-foreground">
+ <p className="font-medium">Step 1: Prepare your {integration.name} account</p>
+ <p className="text-sm text-muted-foreground">
                           Ensure you have the necessary permissions in your {integration.name} account.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary">
+ </p>
+ </div>
+ </div>
+ <div className="flex items-center gap-2">
+ <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary">
                         2
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">Step 2: Provide API credentials</p>
-                        <p className="text-sm text-muted-foreground">
+ <p className="font-medium">Step 2: Provide API credentials</p>
+ <p className="text-sm text-muted-foreground">
                           Enter your {integration.name} API key and instance URL.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
+ </p>
+ </div>
+ </div>
+ <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full border">3</div>
                       <div className="flex-1">
-                        <p className="font-medium">Step 3: Configure data mapping</p>
-                        <p className="text-sm text-muted-foreground">
+ <p className="font-medium">Step 3: Configure data mapping</p>
+ <p className="text-sm text-muted-foreground">
                           Map fields between KontrakPro and {integration.name}.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+ </p>
+ </div>
+ </div>
+ </div>
                 </div>
               )}
-
+              {/* Connection Step 2: API Credentials */}
               {connectionStep === 2 && (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="api-key">API Key</Label>
-                      <Input
-                        id="api-key"
-                        placeholder={`Enter your ${integration.name} API key`}
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        You can find your API key in your {integration.name} account settings.
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="instance-url">Instance URL</Label>
-                      <Input
-                        id="instance-url"
-                        placeholder={`Enter your ${integration.name} instance URL`}
-                        value={instance}
-                        onChange={(e) => setInstance(e.target.value)}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        For example: https://yourcompany.{integration.id}.com
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setConnectionStep(1)}>
-                      Back
-                    </Button>
-                    <Button onClick={handleConnect} disabled={!apiKey || !instance}>
-                      Next
-                    </Button>
-                  </div>
-                </div>
+                <CardContent>
+                  <CRMAccountForm integrationId={integration.id} setConnectionStep={setConnectionStep} />
+                </CardContent>
               )}
-
+              {/* Connection Step 3: Configuration */}
               {connectionStep === 3 && (
-                <div className="space-y-6">
+                <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Configure Sync Settings</h3>
-                    <p className="text-muted-foreground">
-                      Choose which data to sync between KontrakPro and {integration.name}.
-                    </p>
+                    {isCustomIntegration ? (
+                      <p className="text-muted-foreground">
+                        Sync settings for Custom CRM integrations are typically configured via webhook events.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-muted-foreground">
+                          Choose which data to sync between KontrakPro and {integration.name}.
+                        </p>
 
-                    <div className="space-y-4">
-                      {syncSettings.map((setting: CRMSyncSetting) => (
-                        <div key={setting.id} className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label htmlFor={setting.id}>{setting.name}</Label>
-                            <p className="text-sm text-muted-foreground">{setting.description}</p>
-                          </div>
-                          <Switch
-                            id={setting.id}
-                            checked={setting.enabled}
-                            onCheckedChange={(checked) => handleSyncSettingChange(setting.id, checked)}
-                          />
+                        <div className="space-y-4">
+                          {syncSettings.map((setting) => (
+                            <div key={setting.id} className="flex items-center justify-between">
+                              <div className="space-y-0.5">
+    <Label htmlFor={setting.id}>{setting.name}</Label>
+    <p className="text-sm text-muted-foreground">{setting.description}</p>
+    </div>
+    <Switch
+                                id={setting.id}
+                                checked={setting.enabled}
+                                onCheckedChange={(checked) =>
+                                  setSyncSettings(
+                                    syncSettings.map((s) => (s.id === setting.id ? { ...s, enabled: checked } : s))
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </>
+                    )}
+
                   </div>
-
                   <Separator />
-
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Sync Direction</h3>
                     <p className="text-muted-foreground">
                       Choose how data should flow between KontrakPro and {integration.name}.
-                    </p>
-
+    </p>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
                         <Select defaultValue="bidirectional">
                           <SelectTrigger className="w-[280px]">
                             <SelectValue placeholder="Select sync direction" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="bidirectional">Bi-directional (both systems)</SelectItem>
+    <SelectContent>
+    <SelectItem value="bidirectional">Bi-directional (both systems)</SelectItem>
                             <SelectItem value="kontrakpro-to-crm">KontrakPro to {integration.name} only</SelectItem>
                             <SelectItem value="crm-to-kontrakpro">{integration.name} to KontrakPro only</SelectItem>
                           </SelectContent>
@@ -545,55 +530,84 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
                       </div>
                     </div>
                   </div>
-
-                  <Separator />
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Sync Frequency</h3>
-                    <p className="text-muted-foreground">Choose how often data should be synchronized.</p>
-
-                    <div className="flex items-center space-x-2">
-                      <Select defaultValue="15">
-                        <SelectTrigger className="w-[280px]">
-                          <SelectValue placeholder="Select sync frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="5">Every 5 minutes</SelectItem>
-                          <SelectItem value="15">Every 15 minutes</SelectItem>
-                          <SelectItem value="30">Every 30 minutes</SelectItem>
-                          <SelectItem value="60">Every hour</SelectItem>
-                          <SelectItem value="daily">Once a day</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
+                  {!isCustomIntegration && (
+                    <>
+                      <Separator />
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Sync Frequency</h3>
+                        <p className="text-muted-foreground">Choose how often data should be synchronized.</p>
+                        <div className="flex items-center space-x-2">
+                          <Select defaultValue="15">
+                            <SelectTrigger className="w-[280px]">
+                              <SelectValue placeholder="Select sync frequency" />
+                            </SelectTrigger>
+    <SelectContent>
+    <SelectItem value="5">Every 5 minutes</SelectItem>
+                              <SelectItem value="15">Every 15 minutes</SelectItem>
+                              <SelectItem value="30">Every 30 minutes</SelectItem>
+                              <SelectItem value="60">Every hour</SelectItem>
+                              <SelectItem value="daily">Once a day</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Advanced Settings Section */}
+                  {isCustomIntegration && (
+                    <>
+                      <Separator />
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Advanced Settings (Webhooks)</h3>
+                        <p className="text-muted-foreground">Configure webhook details for your Custom CRM.</p>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="webhook-url">KontrakPro Webhook URL</Label>
+                            <Input id="webhook-url" readOnly value={(integration as any).advancedSettings?.webhookUrl || ''} className="mt-1" />
+                            <p className="text-sm text-muted-foreground mt-1">Use this URL in your CRM's webhook settings.</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="api-key-name">Webhook Secret Header Name</Label>
+                            <Input id="api-key-name" readOnly value={(integration as any).advancedSettings?.apiKeyName || ''} className="mt-1" />
+                             <p className="text-sm text-muted-foreground mt-1">The name of the header containing the secret for authentication.</p>
+                          </div>
+                           <div>
+                            <Label htmlFor="webhook-secret">Webhook Secret</Label>
+                            <Input id="webhook-secret" type="password" placeholder="Enter your webhook secret" className="mt-1" />
+                             <p className="text-sm text-muted-foreground mt-1">Enter the secret key used by your CRM to secure webhooks.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* End Advanced Settings Section */}
                   <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={() => setConnectionStep(2)}>
                       Back
+                    </div>
+                    <Button onClick={() => alert(`Integration with ${integration.name} completed!`)}>
+                      Complete Integration
                     </Button>
-                    <Button onClick={handleConnect}>Complete Integration</Button>
                   </div>
                 </div>
               )}
-            </CardContent>
           </Card>
 
           <Tabs defaultValue="features" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="features">Features</TabsTrigger>
+ <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="data-mapping">Data Mapping</TabsTrigger>
               <TabsTrigger value="faq">FAQ</TabsTrigger>
             </TabsList>
             <TabsContent value="features" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Integration Features</CardTitle>
+ <CardTitle>Integration Features</CardTitle>
                   <CardDescription>Here's what you can do with the {integration.name} integration</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {integration.features.map((feature: string, index: number) => (
+                    {integration.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-green-500 mt-0.5" />
                         <span>{feature}</span>
@@ -606,19 +620,19 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
             <TabsContent value="data-mapping" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Data Mapping</CardTitle>
+ <CardTitle>Data Mapping</CardTitle>
                   <CardDescription>See how data is mapped between KontrakPro and {integration.name}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {integration.dataMapping.entities.map((entity: CRMEntity, index: number) => (
+                    {integration.dataMapping.entities.map((entity, index) => (
                       <div key={index} className="space-y-2">
-                        <h3 className="text-lg font-medium">{entity.name} Mapping</h3>
+ <h3 className="text-lg font-medium">{entity.name} Mapping</h3>
                         <div className="rounded-md border">
                           <table className="min-w-full divide-y divide-border">
                             <thead>
                               <tr className="bg-muted/50">
-                                <th className="px-4 py-3 text-left text-sm font-medium">KontrakPro Field</th>
+ <th className="px-4 py-3 text-left text-sm font-medium">KontrakPro Field</th>
                                 <th className="px-4 py-3 text-left text-sm font-medium">{integration.name} Field</th>
                                 <th className="px-4 py-3 text-left text-sm font-medium">Required</th>
                               </tr>
@@ -651,7 +665,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
             <TabsContent value="faq" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
+ <CardTitle>Frequently Asked Questions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -696,7 +710,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>About {integration.name}</CardTitle>
+ <CardTitle>About {integration.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-center">
@@ -727,7 +741,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
 
           <Card>
             <CardHeader>
-              <CardTitle>Related Resources</CardTitle>
+ <CardTitle>Related Resources</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between py-2">
@@ -762,7 +776,7 @@ export default function IntegrationDetailPage({ params }: { params: { id: string
 
           <Card>
             <CardHeader>
-              <CardTitle>Support</CardTitle>
+ <CardTitle>Support</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">Need help with your {integration.name} integration?</p>

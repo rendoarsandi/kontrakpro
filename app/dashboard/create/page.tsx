@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
+import DocumentUpload from "@/components/document-upload"
 const contractTypes = [
   { value: "service", label: "Service Agreement" },
   { value: "nda", label: "Non-Disclosure Agreement" },
@@ -269,22 +270,7 @@ export default function CreateContractPage() {
                   <CardDescription>Upload an existing contract document to start the approval process</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-center w-full">
-                    <label
-                      htmlFor="dropzone-file"
-                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted"
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-10 h-10 mb-3 text-muted-foreground" />
-                        <p className="mb-2 text-sm text-muted-foreground">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-muted-foreground">PDF, DOCX, or DOC (MAX. 20MB)</p>
-                      </div>
-                      <input id="dropzone-file" type="file" className="hidden" />
-                    </label>
-                  </div>
-
+                  <DocumentUpload />
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="upload-name">Contract Name</Label>

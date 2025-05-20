@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -23,6 +24,9 @@ export default function SignContractPage({ params }: { params: { id: string } })
   const [signatureMode, setSignatureMode] = useState<"draw" | "type" | "upload">("draw")
   const [typedSignature, setTypedSignature] = useState("")
   const [signatureImage, setSignatureImage] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null)
   const [signatureAdded, setSignatureAdded] = useState(false)
 
   // Contoh data kontrak
@@ -34,6 +38,7 @@ export default function SignContractPage({ params }: { params: { id: string } })
     dueDate: "May 19, 2025",
     description:
       "This Service Agreement outlines the terms and conditions for providing software development and maintenance services to Acme Inc for their customer relationship management system.",
+    documentUrl: "/placeholder.pdf", // Placeholder document URL
   }
 
   // Contoh data penandatangan
@@ -58,10 +63,27 @@ export default function SignContractPage({ params }: { params: { id: string } })
     },
   ]
 
+  // Simulate fetching document and signing status
+  React.useEffect(() => {
+    const fetchDocument = async () => {
+      try {
+        setIsLoading(true)
+        // In a real application, fetch document details and status from your API
+        // const response = await fetch(`/api/contracts/${params.id}/sign`);
+        // const data = await response.json();
+        setDocumentUrl(contract.documentUrl)
+        // Update signer statuses based on fetched data
+      } catch (err) {
+        setError("Failed to load document.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchDocument()
+  }, [params.id, contract.documentUrl])
+
   // Fungsi untuk menerapkan tanda tangan
   const applySignature = () => {
-    // Di sini kita akan menerapkan tanda tangan ke dokumen
-    // Dalam implementasi nyata, ini akan mengirimkan tanda tangan ke server
     setSignatureAdded(true)
   }
 
@@ -105,6 +127,12 @@ export default function SignContractPage({ params }: { params: { id: string } })
     setSignatureImage(dataUrl)
   }
 
+  if (isLoading) {
+    return <Skeleton className="h-screen w-screen" />
+  }
+  if (error) {
+    return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>
+  }
   return (
     <div className="flex flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -127,16 +155,23 @@ export default function SignContractPage({ params }: { params: { id: string } })
                   <CardTitle>Document Preview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[500px] overflow-auto rounded-md border p-4">
-                    <div className="flex h-full w-full flex-col items-center justify-center rounded-md border-2 border-dashed p-10 text-center">
-                      <FileText className="h-10 w-10 text-muted-foreground" />
-                      <div className="mt-4 text-xl font-bold">{contract.title}</div>
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        This Service Agreement outlines the terms and conditions for providing software development and
-                        maintenance services to Acme Inc for their customer relationship management system.
+                  <div className="h-[500px] overflow-hidden rounded-md border">
+                    {documentUrl ? (
+                      // Using an iframe to embed the document. This might need adjustments
+                      // based on the actual document format and how it's served.
+                      <iframe src={documentUrl} title="Document Preview" className="h-full w-full">
+                        Your browser does not support iframes. You can download the document{" "}
+                        <a href={documentUrl}>here</a>.
+                      </iframe>
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center rounded-md border-2 border-dashed p-10 text-center">
+                        <FileText className="h-10 w-10 text-muted-foreground" />
+                        <div className="mt-4 text-xl font-bold">No Document Available</div>
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          The document could not be loaded for preview.
+                        </div>
                       </div>
-                      <Button className="mt-6">View Full Document</Button>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

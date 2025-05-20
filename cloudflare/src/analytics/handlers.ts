@@ -303,7 +303,7 @@ export async function createDashboard(request: RequestWithParams, env: Env): Pro
   }
 }
 
-// Mendapatkan log audit untuk analisis risiko dan kepatuhan
+// Mendapatkan log audit
 export async function getRiskAndComplianceAuditLogs(request: Request, env: Env): Promise<Response> {
   try {
     const url = new URL(request.url);
@@ -311,7 +311,6 @@ export async function getRiskAndComplianceAuditLogs(request: Request, env: Env):
     const offset = parseInt(url.searchParams.get('offset') || '0');
     const contractId = url.searchParams.get('contract_id');
     const userId = url.searchParams.get('user_id');
-    const actionType = url.searchParams.get('action_type'); // Misalnya: 'contract_viewed', 'version_created', 'approval_status_changed'
 
     let query = `SELECT * FROM audit_logs`;
     const bindings: any[] = [];
@@ -325,9 +324,6 @@ export async function getRiskAndComplianceAuditLogs(request: Request, env: Env):
       conditions.push(`user_id = ?`);
       bindings.push(userId);
     }
-    if (actionType) {
-      conditions.push(`action = ?`);
-      bindings.push(actionType);
     }
 
     if (conditions.length > 0) {
@@ -338,10 +334,6 @@ export async function getRiskAndComplianceAuditLogs(request: Request, env: Env):
     bindings.push(limit, offset);
 
     const { results } = await env.DB.prepare(query).bind(...bindings).all();
-
-    // TODO: Tambahkan logika analisis risiko berdasarkan pola log audit
-    // Misalnya, deteksi akses yang tidak biasa, perubahan status yang sering, dll.
-
     return new Response(JSON.stringify({ audit_logs: results, message: "Risk and compliance audit logs fetched" }), {
       headers: {
         'Content-Type': 'application/json',
@@ -351,6 +343,80 @@ export async function getRiskAndComplianceAuditLogs(request: Request, env: Env):
   } catch (error: any) {
     console.error('Error fetching risk and compliance audit logs:', error);
     return new Response(JSON.stringify({ error: error.message || 'Failed to fetch risk and compliance audit logs' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+}
+
+// Analisis Risiko dan Kepatuhan - Mendapatkan Ringkasan Risiko
+export async function getRiskSummary(request: Request, env: Env): Promise<Response> {
+  try {
+    // TODO: Implement actual risk analysis logic
+    // This is a placeholder returning dummy data
+    const riskSummary = {
+      totalHighRiskContracts: 5,
+      totalMediumRiskContracts: 15,
+      totalLowRiskContracts: 80,
+      complianceIssuesLastMonth: 10,
+      averageRiskScore: 65
+    };
+
+    return new Response(JSON.stringify(riskSummary), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching risk summary:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to fetch risk summary' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+}
+
+// Analisis Risiko dan Kepatuhan - Mendapatkan Laporan Kepatuhan
+export async function getComplianceReport(request: Request, env: Env): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    const timePeriod = url.searchParams.get('time_period') || 'month';
+    const complianceArea = url.searchParams.get('compliance_area'); // e.g., 'GDPR', 'HIPAA'
+
+    // TODO: Implement actual compliance reporting logic
+    // This is a placeholder returning dummy data
+    const complianceData = [
+      { area: 'GDPR', status: 'Compliant', issuesFound: 2, resolutionRate: '90%' },
+      { area: 'HIPAA', status: 'Minor Issues', issuesFound: 5, resolutionRate: '75%' },
+      { area: 'Internal Policies', status: 'Compliant', issuesFound: 1, resolutionRate: '100%' }
+    ];
+
+    if (complianceArea) {
+      const filteredData = complianceData.filter(item => item.area === complianceArea);
+      return new Response(JSON.stringify(filteredData), {
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    return new Response(JSON.stringify(complianceData), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching compliance report:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to fetch compliance report' }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',

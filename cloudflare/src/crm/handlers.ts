@@ -1,6 +1,7 @@
 import { Env } from '../index';
 // import { authenticate } from '../auth/middleware'; // Akan diaktifkan nanti
 
+// Placeholder untuk tipe Request dengan user dan organization_id
 // Placeholder untuk tipe Request dengan user
 interface AuthenticatedRequest extends Request {
   user?: { id: string };
@@ -110,8 +111,11 @@ export async function syncCrmDataHandler(request: AuthenticatedRequest, env: Env
 
     // TODO: Ambil konfigurasi CRM dari database
     // TODO: Implementasikan logika sinkronisasi berdasarkan provider dan sync_type
+    // Ini adalah endpoint yang menangani permintaan untuk melakukan sinkronisasi data CRM.
     //       Ini akan melibatkan pengambilan data dari CRM (misalnya, Salesforce, HubSpot)
     //       dan memperbarui/membuat data di database KontrakPro (misalnya, tabel contracts, organizations, users).
+    //       Implementasikan pemetaan data dua arah di sini.
+    //       Data dari CRM ke KontrakPro dan KontrakPro ke CRM.
     //       Juga sebaliknya, jika ada pemetaan dua arah.
 
     console.log(`Starting CRM sync for provider: ${provider}, type: ${sync_type}`);
@@ -130,6 +134,99 @@ export async function syncCrmDataHandler(request: AuthenticatedRequest, env: Env
   } catch (error: any) {
     console.error('Error syncing CRM data:', error);
     return new Response(JSON.stringify({ error: error.message || 'Failed to sync CRM data' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Handler untuk menerima event webhook dari CRM
+export async function handleCrmWebhookEvent(request: Request, env: Env): Promise<Response> {
+  try {
+    // Webhook dari CRM biasanya tidak memerlukan autentikasi user,
+    // tetapi mungkin memerlukan autentikasi atau validasi khusus dari CRM itu sendiri.
+    // Dapatkan body request
+    const eventData = await request.json();
+
+    // TODO: Identifikasi provider CRM dari request (misalnya dari header atau body)
+    const provider = request.headers.get('X-CRM-Provider') || 'unknown'; // Contoh identifikasi provider
+
+    // TODO: Lakukan validasi event webhook (misalnya, verifikasi signature, secret token)
+    //       mekanisme validasi sangat bergantung pada provider CRM.
+    //       Jika validasi gagal, kembalikan status 401 atau 403.
+    // if (!isValidWebhook(request, provider, env)) {
+    //   return new Response(JSON.stringify({ error: 'Webhook signature verification failed' }), {
+    //     status: 401,
+    //     headers: { 'Content-Type': 'application/json' },
+    //   });
+    // }
+
+    // TODO: Identifikasi organization_id terkait dari event data atau konfigurasi webhook
+    //       Ini penting untuk mengaitkan event dengan organisasi yang benar di KontrakPro.
+    //       Mekanisme identifikasi ini juga bergantung pada provider CRM.
+    //       Contoh: const organization_id = eventData.organization_id;
+    const organization_id = 'placeholder_organization_id'; // Placeholder
+
+    if (!organization_id) {
+       return new Response(JSON.stringify({ error: 'Could not identify organization from webhook event' }), {
+         status: 400,
+         headers: { 'Content-Type': 'application/json' },
+       });
+    }
+
+    // TODO: Proses event data
+    //       Ini akan melibatkan pemetaan event CRM (misalnya, 'deal_won', 'contact_updated')
+    //       ke tindakan atau pemicu di KontrakPro (misalnya, membuat kontrak, memperbarui status, mengirim notifikasi).
+    //       Panggil fungsi internal KontrakPro berdasarkan event.
+    console.log(`Received webhook event from ${provider} for organization ${organization_id}:`, eventData);
+
+    // Contoh memicu workflow (ini hanya placeholder, perlu implementasi nyata)
+    // await triggerWorkflowBasedOnCrmEvent(organization_id, provider, eventData, env);
+
+    // Mengembalikan respons 200 OK untuk menunjukkan bahwa webhook diterima
+    return new Response(JSON.stringify({ message: 'Webhook received and processed (placeholder)' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: any) {
+    console.error('Error processing CRM webhook:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to process CRM webhook' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// TODO: Implementasikan handler untuk mengirim event dari KontrakPro ke CRM
+export async function sendKontrakProEventToCrmHandler(request: AuthenticatedRequest, env: Env): Promise<Response> {
+  try {
+    const { provider, event_type, event_data } = await request.json() as { provider: string, event_type: string, event_data: any };
+
+    if (!provider || !event_type || !event_data) {
+      return new Response(JSON.stringify({ error: 'Missing provider, event_type, or event_data' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // TODO: Ambil konfigurasi integrasi CRM untuk provider dan organization_id
+    // TODO: Implementasikan logika pemetaan event KontrakPro ke tindakan di CRM
+    //       Misalnya, jika event_type adalah 'contract_signed', perbarui status deal di CRM.
+    //       Ini akan melibatkan interaksi dengan API CRM eksternal.
+
+    console.log(`Sending KontrakPro event to ${provider}: ${event_type}`, event_data);
+
+    return new Response(JSON.stringify({
+      message: `KontrakPro event (${event_type}) sent to ${provider} (placeholder).`,
+      status: 'event_sent'
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error: any) {
+    console.error('Error sending KontrakPro event to CRM:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to send KontrakPro event to CRM' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -162,6 +259,11 @@ export async function triggerWorkflowFromCrmEventHandler(request: AuthenticatedR
     //       Ini akan melibatkan interaksi dengan `contracts/handlers.ts` atau `workflows/handlers.ts`.
 
     console.log(`Received CRM event from ${provider}: ${event_type}`, event_data);
+
+    // TODO: Implementasikan logika untuk memicu workflow atau tindakan lain di KontrakPro
+    // berdasarkan event_type dan event_data yang diterima dari CRM.
+    // Contoh: Panggil fungsi dari workflows/handlers.ts atau contracts/handlers.ts
+    // await triggerSpecificWorkflow(organization_id, event_type, event_data);
 
     // Placeholder response
     return new Response(JSON.stringify({
