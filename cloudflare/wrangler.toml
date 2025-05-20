@@ -3,7 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2023-12-01"
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
+
+# Konfigurasi domain kustom
+# Uncomment dan sesuaikan jika Anda memiliki domain kustom
+# [routes]
+# pattern = "api.kontrakpro.com/*"
+# zone_name = "kontrakpro.com"
 
 # Konfigurasi D1 Database
 [[d1_databases]]

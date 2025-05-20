@@ -31,7 +31,9 @@
 - `PRD.md` - Product Requirements Document
 - `plan.md` - Rencana implementasi dengan checklist fitur
 - `IMPLEMENTATION_GUIDE.md` - Panduan implementasi
-- `DEPLOYMENT_INSTRUCTIONS.md` - Instruksi deployment
+- `DEPLOYMENT_INSTRUCTIONS.md` - Instruksi deployment backend
+- `CUSTOM_DOMAIN_SETUP.md` - Panduan konfigurasi domain kustom
+- `CLOUDFLARE_PAGES_DEPLOYMENT.md` - Panduan deployment frontend di Cloudflare Pages
 - `SUMMARY.md` - Ringkasan implementasi
 
 ### Backend (Cloudflare)
@@ -81,17 +83,26 @@
    wrangler deploy
    ```
 
+3. **Konfigurasi Domain Kustom** (opsional):
+   - Ikuti panduan di `CUSTOM_DOMAIN_SETUP.md` untuk mengkonfigurasi domain kustom
+   - Perbarui `wrangler.toml` dengan konfigurasi domain kustom
+   - Deploy ulang Worker setelah konfigurasi domain kustom
+
 ### 2. Integrasi Frontend
 
 1. **Tambahkan URL API ke Environment Variables**:
-   
+
    Buat file `.env.local` di root proyek Next.js:
    ```
-   NEXT_PUBLIC_API_URL=https://kontrakpro-api.your-username.workers.dev
+   # Gunakan URL domain kustom jika sudah dikonfigurasi
+   NEXT_PUBLIC_API_URL=https://api.kontrakpro.com
+
+   # Atau gunakan URL default Workers jika belum mengkonfigurasi domain kustom
+   # NEXT_PUBLIC_API_URL=https://kontrakpro-api.rendoarsandi.workers.dev
    ```
 
 2. **Integrasikan Komponen UI**:
-   
+
    Tambahkan komponen yang telah dibuat ke halaman yang sesuai:
    - `ContractsList` ke halaman `/dashboard/contracts`
    - `CreateContractForm` ke halaman `/dashboard/contracts/create`

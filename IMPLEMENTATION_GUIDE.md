@@ -143,6 +143,30 @@ npm run deploy
 
 Setelah deployment berhasil, Anda akan mendapatkan URL untuk API Anda, misalnya `https://kontrakpro-api.your-username.workers.dev`.
 
+### 6.1 Konfigurasi Domain Kustom
+
+Untuk menggunakan domain kustom (misalnya `api.kontrakpro.com`) alih-alih domain default Workers:
+
+1. **Perbarui wrangler.toml**:
+
+   ```toml
+   [routes]
+   pattern = "api.kontrakpro.com/*"
+   zone_name = "kontrakpro.com"
+   ```
+
+2. **Buat record DNS**:
+   - Buat record CNAME di Cloudflare yang mengarahkan `api.kontrakpro.com` ke `kontrakpro-api.your-username.workers.dev`
+   - Pastikan Proxy status diaktifkan (ikon cloud berwarna oranye)
+
+3. **Deploy ulang Worker**:
+
+   ```bash
+   npm run deploy
+   ```
+
+Untuk panduan lengkap, lihat file `CUSTOM_DOMAIN_SETUP.md`.
+
 ## 7. Integrasi dengan Frontend
 
 ### 7.1 Konfigurasi API Service
@@ -155,11 +179,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://kontrakpro-api.your-
 // Fungsi untuk menangani respons API
 async function handleResponse(response: Response) {
   const data = await response.json();
-  
+
   if (!response.ok) {
     throw new Error(data.error || 'Something went wrong');
   }
-  
+
   return data;
 }
 
@@ -181,33 +205,33 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    
+
     const data = await handleResponse(response);
-    
+
     // Simpan token di localStorage
     localStorage.setItem('token', data.token);
-    
+
     return data;
   },
-  
+
   signup: async (userData: any) => {
     const response = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
     });
-    
+
     const data = await handleResponse(response);
-    
+
     // Simpan token di localStorage
     localStorage.setItem('token', data.token);
-    
+
     return data;
   },
-  
+
   logout: async () => {
     const token = localStorage.getItem('token');
-    
+
     if (token) {
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
@@ -215,54 +239,54 @@ export const api = {
         body: JSON.stringify({ token })
       });
     }
-    
+
     localStorage.removeItem('token');
   },
-  
+
   // Contracts
   getContracts: async (params = {}) => {
     const queryString = new URLSearchParams(params as Record<string, string>).toString();
     const response = await fetch(`${API_URL}/api/contracts?${queryString}`, {
       headers: getAuthHeaders()
     });
-    
+
     return handleResponse(response);
   },
-  
+
   getContract: async (id: string) => {
     const response = await fetch(`${API_URL}/api/contracts/${id}`, {
       headers: getAuthHeaders()
     });
-    
+
     return handleResponse(response);
   },
-  
+
   createContract: async (contractData: any) => {
     const response = await fetch(`${API_URL}/api/contracts`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(contractData)
     });
-    
+
     return handleResponse(response);
   },
-  
+
   updateContract: async (id: string, contractData: any) => {
     const response = await fetch(`${API_URL}/api/contracts/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(contractData)
     });
-    
+
     return handleResponse(response);
   },
-  
+
   deleteContract: async (id: string) => {
     const response = await fetch(`${API_URL}/api/contracts/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-    
+
     return handleResponse(response);
   }
 };
@@ -282,7 +306,7 @@ export default function ContractsPage() {
   const [contracts, setContracts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  
+
   useEffect(() => {
     async function fetchContracts() {
       try {
@@ -296,10 +320,10 @@ export default function ContractsPage() {
         setLoading(false)
       }
     }
-    
+
     fetchContracts()
   }, [])
-  
+
   // Render contracts...
 }
 ```

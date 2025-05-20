@@ -137,18 +137,18 @@ curl -X GET https://kontrakpro-api.your-username.workers.dev/api/contracts \
 Untuk mengintegrasikan API dengan frontend Next.js, Anda perlu:
 
 1. **Tambahkan URL API ke Environment Variables**:
-   
+
    Buat file `.env.local` di root proyek Next.js:
    ```
    NEXT_PUBLIC_API_URL=https://kontrakpro-api.your-username.workers.dev
    ```
 
 2. **Buat Service API**:
-   
+
    Implementasikan service untuk berkomunikasi dengan backend Cloudflare seperti yang dijelaskan di `IMPLEMENTATION_GUIDE.md`.
 
 3. **Update Komponen UI**:
-   
+
    Hubungkan komponen UI dengan API service untuk menampilkan dan mengelola data kontrak.
 
 ## Pemecahan Masalah
@@ -169,15 +169,24 @@ Jika Anda mengalami masalah selama deployment atau penggunaan API, berikut adala
 4. **Periksa Autentikasi**:
    Pastikan token yang digunakan masih valid dan belum kedaluwarsa.
 
+## Konfigurasi Domain Kustom
+
+Untuk mengkonfigurasi domain kustom untuk API KontrakPro, lihat panduan lengkap di file `CUSTOM_DOMAIN_SETUP.md`. Panduan ini mencakup:
+
+1. Menambahkan domain ke Cloudflare
+2. Membuat subdomain untuk API
+3. Mengkonfigurasi Worker untuk menggunakan domain kustom
+4. Memverifikasi konfigurasi
+5. Pemecahan masalah
+
 ## Langkah Selanjutnya
 
 Setelah backend berhasil di-deploy dan terintegrasi dengan frontend, Anda dapat melanjutkan dengan:
 
 1. **Implementasi Fitur Lanjutan**:
-   - Workflow dan persetujuan
-   - Upload dan manajemen dokumen
-   - Integrasi CRM
-   - Analitik dan pelaporan
+   - Integrasi E-Signature
+   - Integrasi CRM dasar
+   - AI Analysis
 
 2. **Pengujian dan Optimasi**:
    - Uji performa API

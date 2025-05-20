@@ -5,6 +5,8 @@ import { login, signup, refreshToken, logout } from './auth/handlers';
 import { uploadDocument, downloadDocument, listDocuments, deleteDocument } from './documents/handlers';
 import { createWorkflow, getWorkflow, updateWorkflowStep, getUserTasks } from './workflows/handlers';
 import { getUserNotifications, markNotificationAsRead, createReminder, getUserReminders } from './notifications/handlers';
+import { executeAnalytics, getSummaryMetrics, getDashboard, createDashboard } from './analytics/handlers';
+import { getReports, getReport, createReport, generateReport } from './analytics/reports';
 import { authenticate } from './auth/middleware';
 import { corsHeaders } from './utils/cors';
 
@@ -62,6 +64,22 @@ router.post('/api/workflows', createWorkflow);
 router.get('/api/workflows/:id', getWorkflow);
 router.put('/api/workflow-steps/:id', updateWorkflowStep);
 router.get('/api/user/tasks', getUserTasks);
+
+// Endpoint notifikasi
+router.get('/api/notifications', getUserNotifications);
+router.put('/api/notifications/:id/read', markNotificationAsRead);
+router.post('/api/reminders', createReminder);
+router.get('/api/reminders', getUserReminders);
+
+// Endpoint analitik
+router.post('/api/analytics/execute', executeAnalytics);
+router.get('/api/analytics/summary', getSummaryMetrics);
+router.get('/api/dashboards/:id', getDashboard);
+router.post('/api/dashboards', createDashboard);
+router.get('/api/reports', getReports);
+router.get('/api/reports/:id', getReport);
+router.post('/api/reports', createReport);
+router.get('/api/reports/:id/generate', generateReport);
 
 // Handler untuk permintaan yang tidak cocok
 router.all('*', () => new Response('Not Found', { status: 404 }));

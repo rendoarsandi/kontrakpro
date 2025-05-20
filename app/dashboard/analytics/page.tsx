@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { Calendar, Download, FileText, Filter, PieChart, RefreshCw, Search, Share2, Sliders } from "lucide-react"
+import { AnalyticsProvider, useAnalytics } from "@/components/providers/analytics-provider"
+import { ChartContainer } from "@/components/charts/chart-container"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,17 +32,29 @@ import { RiskTrendChart } from "@/components/charts/risk-trend-chart"
 import { ComplianceScoreChart } from "@/components/charts/compliance-score-chart"
 import { ContractMetricsTable } from "@/components/tables/contract-metrics-table"
 import { DashboardMetricCard } from "@/components/dashboard-metric-card"
+import { MetricCardWithData } from "@/components/metrics/metric-card-with-data"
+
+function AnalyticsDashboard() {
+  const { timeRange, setTimeRange, refreshData, loading } = useAnalytics()
+
+  const handleRefresh = async () => {
+    await refreshData()
+  }
+}
 
 export default function AnalyticsDashboardPage() {
-  const [timeRange, setTimeRange] = useState("last30")
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  return (
+    <AnalyticsProvider>
+      <AnalyticsDashboardContent />
+    </AnalyticsProvider>
+  )
+}
 
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    // Simulate data refresh
-    setTimeout(() => {
-      setIsRefreshing(false)
-    }, 1500)
+function AnalyticsDashboardContent() {
+  const { timeRange, setTimeRange, refreshData, loading } = useAnalytics()
+
+  const handleRefresh = async () => {
+    await refreshData()
   }
 
   return (
@@ -57,20 +71,20 @@ export default function AnalyticsDashboardPage() {
                 className="w-[200px] pl-8 md:w-[260px] lg:w-[320px]"
               />
             </div>
-            <Select defaultValue={timeRange} onValueChange={setTimeRange}>
+            <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select time period" />
+                <SelectValue placeholder="Pilih periode waktu" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="last7">Last 7 days</SelectItem>
-                <SelectItem value="last30">Last 30 days</SelectItem>
-                <SelectItem value="last90">Last 90 days</SelectItem>
-                <SelectItem value="year">This year</SelectItem>
-                <SelectItem value="custom">Custom range</SelectItem>
+                <SelectItem value="last7">7 hari terakhir</SelectItem>
+                <SelectItem value="last30">30 hari terakhir</SelectItem>
+                <SelectItem value="last90">90 hari terakhir</SelectItem>
+                <SelectItem value="year">Tahun ini</SelectItem>
+                <SelectItem value="custom">Rentang kustom</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <Button variant="outline" size="icon" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               <span className="sr-only">Refresh data</span>
             </Button>
             <Button variant="outline" className="gap-1">
@@ -118,32 +132,36 @@ export default function AnalyticsDashboardPage() {
             <TabsContent value="overview" className="space-y-6">
               {/* Key Metrics Row */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Total Contracts"
-                  value="127"
-                  change="+4.3%"
+                  metricKey="total_contracts"
+                  format="number"
+                  changeValue="+4.3%"
                   trend="up"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Active Contracts"
-                  value="86"
-                  change="+2.1%"
+                  metricKey="active_contracts"
+                  format="number"
+                  changeValue="+2.1%"
                   trend="up"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Processing Time"
-                  value="4.2 days"
-                  change="-12.5%"
+                  metricKey="avg_processing_time"
+                  format="days"
+                  changeValue="-12.5%"
                   trend="down"
                   icon={<Calendar className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Renewal Rate"
-                  value="87%"
-                  change="+3.2%"
+                  metricKey="renewal_rate"
+                  format="percent"
+                  changeValue="+3.2%"
                   trend="up"
                   icon={<RefreshCw className="h-4 w-4" />}
                 />
@@ -151,60 +169,52 @@ export default function AnalyticsDashboardPage() {
 
               {/* Contract Activity and Type Charts */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="lg:col-span-4">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Contract Activity</CardTitle>
-                        <CardDescription>Number of contracts created, approved, and expired</CardDescription>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                <ChartContainer
+                  title="Aktivitas Kontrak"
+                  description="Jumlah kontrak yang dibuat, disetujui, dan kedaluwarsa"
+                  className="lg:col-span-4"
+                  actions={
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Sliders className="h-4 w-4" />
+                          <span className="sr-only">Sesuaikan grafik</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Opsi Grafik</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>Tampilkan Hanya yang Dibuat</DropdownMenuItem>
+                        <DropdownMenuItem>Tampilkan Hanya yang Disetujui</DropdownMenuItem>
+                        <DropdownMenuItem>Tampilkan Hanya yang Kedaluwarsa</DropdownMenuItem>
+                        <DropdownMenuItem>Tampilkan Semua</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  }
+                >
+                  <ContractActivityChart className="aspect-[4/3]" />
+                </ChartContainer>
+                <ChartContainer
+                  title="Tipe Kontrak"
+                  description="Distribusi berdasarkan tipe kontrak"
+                  className="lg:col-span-3"
+                  actions={
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
                           <Button variant="ghost" size="icon">
-                            <Sliders className="h-4 w-4" />
-                            <span className="sr-only">Adjust chart</span>
+                            <PieChart className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Chart Options</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>Show Created Only</DropdownMenuItem>
-                          <DropdownMenuItem>Show Approved Only</DropdownMenuItem>
-                          <DropdownMenuItem>Show Expired Only</DropdownMenuItem>
-                          <DropdownMenuItem>Show All</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ContractActivityChart className="aspect-[4/3]" />
-                  </CardContent>
-                </Card>
-                <Card className="lg:col-span-3">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Contract Types</CardTitle>
-                        <CardDescription>Distribution by contract type</CardDescription>
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <PieChart className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Toggle between pie and donut chart</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ContractTypeChart className="aspect-[4/3]" />
-                  </CardContent>
-                </Card>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Beralih antara grafik pie dan donut</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  }
+                >
+                  <ContractTypeChart className="aspect-[4/3]" />
+                </ChartContainer>
               </div>
 
               {/* Risk Distribution and Contract Value */}
@@ -256,24 +266,18 @@ export default function AnalyticsDashboardPage() {
 
               {/* Contract Status and Team Performance */}
               <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Contract Status</CardTitle>
-                    <CardDescription>Current status of all contracts</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ContractStatusChart className="aspect-[4/3]" />
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Team Performance</CardTitle>
-                    <CardDescription>Contract processing efficiency by team</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <TeamPerformanceChart className="aspect-[4/3]" />
-                  </CardContent>
-                </Card>
+                <ChartContainer
+                  title="Status Kontrak"
+                  description="Status saat ini dari semua kontrak"
+                >
+                  <ContractStatusChart className="aspect-[4/3]" />
+                </ChartContainer>
+                <ChartContainer
+                  title="Kinerja Tim"
+                  description="Efisiensi pemrosesan kontrak berdasarkan tim"
+                >
+                  <TeamPerformanceChart className="aspect-[4/3]" />
+                </ChartContainer>
               </div>
 
               {/* Performance Metrics */}
@@ -338,33 +342,29 @@ export default function AnalyticsDashboardPage() {
             <TabsContent value="contracts" className="space-y-6">
               {/* Contract Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Total Value"
-                  value="$4.32M"
-                  change="+8.7%"
-                  trend="up"
+                  metricKey="total_value"
+                  format="currency"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Contract Value"
-                  value="$34,062"
-                  change="+5.2%"
-                  trend="up"
+                  metricKey="avg_contract_value"
+                  format="currency"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Contracts Expiring"
-                  value="14"
-                  change="+2"
-                  trend="up"
+                  metricKey="contracts_expiring"
+                  format="number"
                   icon={<Calendar className="h-4 w-4" />}
                   trendDirection="negative"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Renewal Opportunity"
-                  value="$1.2M"
-                  change="+12.5%"
-                  trend="up"
+                  metricKey="renewal_opportunity"
+                  format="currency"
                   icon={<RefreshCw className="h-4 w-4" />}
                 />
               </div>
@@ -398,34 +398,30 @@ export default function AnalyticsDashboardPage() {
             <TabsContent value="performance" className="space-y-6">
               {/* Performance Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Approval Time"
-                  value="2.3 days"
-                  change="-14.8%"
-                  trend="down"
+                  metricKey="avg_approval_time"
+                  format="days"
                   icon={<Calendar className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Negotiation Time"
-                  value="5.7 days"
-                  change="-8.1%"
-                  trend="down"
+                  metricKey="avg_negotiation_time"
+                  format="days"
                   icon={<Calendar className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Contracts per User"
-                  value="12.4"
-                  change="+3.2%"
-                  trend="up"
+                  metricKey="contracts_per_user"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Automation Rate"
-                  value="76%"
-                  change="+12.5%"
-                  trend="up"
+                  metricKey="automation_rate"
+                  format="percent"
                   icon={<RefreshCw className="h-4 w-4" />}
                 />
               </div>
@@ -445,35 +441,31 @@ export default function AnalyticsDashboardPage() {
             <TabsContent value="risk" className="space-y-6">
               {/* Risk Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="High Risk Contracts"
-                  value="12"
-                  change="-2"
-                  trend="down"
+                  metricKey="high_risk_contracts"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Medium Risk Contracts"
-                  value="34"
-                  change="-5"
-                  trend="down"
+                  metricKey="medium_risk_contracts"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Risk Score"
-                  value="42/100"
-                  change="-8.3%"
-                  trend="down"
+                  metricKey="avg_risk_score"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Risk Reduction Rate"
-                  value="18.5%"
-                  change="+4.2%"
-                  trend="up"
+                  metricKey="risk_reduction_rate"
+                  format="percent"
                   icon={<RefreshCw className="h-4 w-4" />}
                 />
               </div>
@@ -504,34 +496,30 @@ export default function AnalyticsDashboardPage() {
             <TabsContent value="compliance" className="space-y-6">
               {/* Compliance Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Compliance Score"
-                  value="92%"
-                  change="+3.5%"
-                  trend="up"
+                  metricKey="compliance_score"
+                  format="percent"
                   icon={<FileText className="h-4 w-4" />}
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Non-compliant Contracts"
-                  value="5"
-                  change="-3"
-                  trend="down"
+                  metricKey="non_compliant_contracts"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Compliance Issues"
-                  value="12"
-                  change="-8"
-                  trend="down"
+                  metricKey="compliance_issues"
+                  format="number"
                   icon={<FileText className="h-4 w-4" />}
                   trendDirection="positive"
                 />
-                <DashboardMetricCard
+                <MetricCardWithData
                   title="Avg. Resolution Time"
-                  value="3.2 days"
-                  change="-12.5%"
-                  trend="down"
+                  metricKey="avg_resolution_time"
+                  format="days"
                   icon={<Calendar className="h-4 w-4" />}
                   trendDirection="positive"
                 />
