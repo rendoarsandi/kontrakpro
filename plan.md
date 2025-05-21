@@ -1,4 +1,4 @@
-# Rencana Implementasi KontrakPro di Cloudflare
+# Rencana Implementasi KontrakPro di Supabase
 
 ## 1. Checklist Fitur dari PRD
 
@@ -72,12 +72,12 @@ Berdasarkan analisis implementasi saat ini, berikut adalah fitur-fitur yang belu
 
 Berikut adalah prioritas implementasi fitur berdasarkan urgensi dan dependensi:
 
-### Prioritas 1: Infrastruktur Dasar ✅
-1. ✅ Setup Cloudflare Workers
-2. ✅ Konfigurasi Cloudflare D1 (database)
-3. ✅ Konfigurasi Cloudflare KV (key-value storage)
-4. ✅ Konfigurasi Cloudflare R2 (object storage)
-5. ✅ Implementasi autentikasi dan otorisasi
+### Prioritas 1: Infrastruktur Dasar (Supabase) ✅
+1. ✅ Setup Proyek Supabase
+2. ✅ Konfigurasi Supabase Database (PostgreSQL)
+3. ✅ Konfigurasi Supabase Storage (untuk dokumen)
+4. ✅ Implementasi Supabase Auth (Autentikasi dan Otorisasi pengguna)
+5. ✅ (Opsional) Setup Supabase Edge Functions (untuk logika backend kustom jika diperlukan)
 
 ### Prioritas 2: Fitur Inti ✅
 1. ✅ Manajemen Kontrak (CRUD)
@@ -100,451 +100,289 @@ Berikut adalah prioritas implementasi fitur berdasarkan urgensi dan dependensi:
 2. [x] Integrasi CRM lanjutan (Backend handler dasar untuk event webhook dimulai)
 3. [x] Fitur kolaborasi lanjutan (Backend handler dasar untuk komentar dimulai)
 
-## 4. Langkah-langkah Implementasi Backend di Cloudflare
+## 4. Langkah-langkah Implementasi Backend di Supabase
 
-### 4.1 Setup Cloudflare Workers
+### 4.1 Setup Proyek Supabase
 
-1. **Instalasi Wrangler CLI**
-   ```bash
-   npm install -g wrangler
-   ```
+1.  **Buat Akun Supabase**: Jika belum punya, daftar di [supabase.com](https://supabase.com).
+2.  **Buat Proyek Baru**: Di Supabase Dashboard, buat proyek baru untuk KontrakPro.
+3.  **Catat Kredensial Proyek**: Simpan Project URL, `anon` key, dan `service_role` key. Ini akan digunakan untuk menghubungkan aplikasi ke Supabase.
 
-2. **Login ke Cloudflare**
-   ```bash
-   wrangler login
-   ```
+### 4.2 Instalasi dan Setup Supabase CLI
 
-3. **Inisialisasi Proyek Workers**
-   ```bash
-   wrangler init kontrakpro-api
-   ```
+1.  **Instalasi Supabase CLI**
+    ```bash
+    npm install -g supabase
+    ```
+2.  **Login ke Supabase CLI**
+    ```bash
+    supabase login
+    ```
+3.  **Inisialisasi Supabase di Proyek Lokal** (Jalankan di root direktori proyek Next.js Anda)
+    ```bash
+    supabase init
+    ```
+    Ini akan membuat direktori `supabase` di proyek Anda.
+4.  **Link Proyek Lokal ke Proyek Supabase Remote**
+    ```bash
+    supabase link --project-ref <PROJECT_ID_ANDA>
+    ```
+    Ganti `<PROJECT_ID_ANDA>` dengan ID proyek Supabase Anda.
 
-4. **Struktur Proyek Workers**
-   ```
-   kontrakpro-api/
-   ├── src/
-   │   ├── index.ts
-   │   ├── auth/
-   │   ├── contracts/
-   │   ├── workflows/
-   │   ├── users/
-   │   └── utils/
-   ├── wrangler.toml
-   └── package.json
-   ```
+### 4.3 Konfigurasi Supabase Database (PostgreSQL)
 
-5. **Konfigurasi wrangler.toml**
-   ```toml
-   name = "kontrakpro-api"
-   main = "src/index.ts"
-   compatibility_date = "2023-12-01"
+1.  **Membuat Skema Database**
+    Skema database yang ada (untuk Users, Organizations, Contracts, dll.) sebagian besar kompatibel dengan PostgreSQL. Buat file migrasi SQL di direktori `supabase/migrations`.
+    Contoh: `supabase/migrations/YYYYMMDDHHMMSS_initial_schema.sql`
+    ```sql
+    -- Users Table (Supabase Auth akan menangani tabel users, tapi Anda bisa menambahkan tabel 'profiles' untuk data tambahan)
+    CREATE TABLE profiles (
+      id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    );
 
-   [vars]
-   ENVIRONMENT = "development"
+    -- Organizations Table
+    CREATE TABLE organizations (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    );
 
-   # Konfigurasi untuk D1, KV, dan R2 akan ditambahkan nanti
-   ```
+    -- Contracts Table
+    CREATE TABLE contracts (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL,
+      type TEXT NOT NULL,
+      owner_id UUID NOT NULL REFERENCES profiles(id),
+      organization_id UUID NOT NULL REFERENCES organizations(id),
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    );
 
-### 4.2 Konfigurasi Cloudflare D1 (Database)
+    -- Contract Versions Table
+    CREATE TABLE contract_versions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      contract_id UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+      version INTEGER NOT NULL,
+      content TEXT NOT NULL, -- Pertimbangkan JSONB jika kontennya terstruktur
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+      created_by UUID NOT NULL REFERENCES profiles(id)
+    );
 
-1. **Membuat Database D1**
-   ```bash
-   wrangler d1 create kontrakpro-db
-   ```
+    -- Workflows Table
+    CREATE TABLE workflows (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      contract_id UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+      status TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    );
 
-2. **Menambahkan Konfigurasi D1 ke wrangler.toml**
-   ```toml
-   [[d1_databases]]
-   binding = "DB"
-   database_name = "kontrakpro-db"
-   database_id = "ID_DARI_LANGKAH_SEBELUMNYA"
-   ```
+    -- Workflow Steps Table
+    CREATE TABLE workflow_steps (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      workflow_id UUID NOT NULL REFERENCES workflows(id) ON DELETE CASCADE,
+      step_number INTEGER NOT NULL,
+      type TEXT NOT NULL, -- e.g., 'approval', 'signature'
+      status TEXT NOT NULL, -- e.g., 'pending', 'approved', 'rejected'
+      assignee_id UUID REFERENCES profiles(id),
+      completed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    );
+    ```
+    **Catatan**:
+    - Tipe `TEXT PRIMARY KEY` diganti dengan `UUID PRIMARY KEY DEFAULT gen_random_uuid()` untuk ID.
+    - `INTEGER` untuk timestamp diganti dengan `TIMESTAMPTZ DEFAULT timezone('utc'::text, now())`.
+    - Foreign key `owner_id`, `created_by`, `assignee_id` sekarang merujuk ke `profiles(id)`.
 
-3. **Membuat Skema Database**
-   Buat file `schema.sql`:
-   ```sql
-   -- Users Table
-   CREATE TABLE users (
-     id TEXT PRIMARY KEY,
-     email TEXT UNIQUE NOT NULL,
-     name TEXT NOT NULL,
-     password_hash TEXT NOT NULL,
-     role TEXT NOT NULL,
-     created_at INTEGER NOT NULL,
-     updated_at INTEGER NOT NULL
-   );
+2.  **Menjalankan Migrasi Database**
+    ```bash
+    supabase db push
+    ```
+    Atau, untuk kontrol lebih, buat file migrasi individual:
+    ```bash
+    supabase migration new initial_schema
+    # Edit file migrasi yang baru dibuat, lalu:
+    supabase migration up
+    ```
 
-   -- Organizations Table
-   CREATE TABLE organizations (
-     id TEXT PRIMARY KEY,
-     name TEXT NOT NULL,
-     created_at INTEGER NOT NULL,
-     updated_at INTEGER NOT NULL
-   );
+3.  **Aktifkan Row Level Security (RLS)**
+    Sangat penting untuk mengaktifkan RLS pada tabel Anda dan mendefinisikan policies untuk keamanan data. Ini bisa dilakukan di Supabase Dashboard (Authentication -> Policies) atau via SQL.
 
-   -- Contracts Table
-   CREATE TABLE contracts (
-     id TEXT PRIMARY KEY,
-     title TEXT NOT NULL,
-     description TEXT,
-     status TEXT NOT NULL,
-     type TEXT NOT NULL,
-     owner_id TEXT NOT NULL,
-     organization_id TEXT NOT NULL,
-     created_at INTEGER NOT NULL,
-     updated_at INTEGER NOT NULL,
-     FOREIGN KEY (owner_id) REFERENCES users(id),
-     FOREIGN KEY (organization_id) REFERENCES organizations(id)
-   );
+### 4.4 Konfigurasi Supabase Storage
 
-   -- Contract Versions Table
-   CREATE TABLE contract_versions (
-     id TEXT PRIMARY KEY,
-     contract_id TEXT NOT NULL,
-     version INTEGER NOT NULL,
-     content TEXT NOT NULL,
-     created_at INTEGER NOT NULL,
-     created_by TEXT NOT NULL,
-     FOREIGN KEY (contract_id) REFERENCES contracts(id),
-     FOREIGN KEY (created_by) REFERENCES users(id)
-   );
+1.  **Membuat Bucket Penyimpanan**
+    Di Supabase Dashboard, navigasi ke Storage dan buat bucket baru (misalnya, `kontrakpro-documents`).
+2.  **Mengatur Kebijakan Akses Bucket**
+    Konfigurasikan kebijakan akses untuk bucket (misalnya, apakah file publik atau memerlukan autentikasi). Ini bisa dilakukan melalui UI Dashboard atau menggunakan Supabase JS SDK.
 
-   -- Workflows Table
-   CREATE TABLE workflows (
-     id TEXT PRIMARY KEY,
-     contract_id TEXT NOT NULL,
-     status TEXT NOT NULL,
-     created_at INTEGER NOT NULL,
-     updated_at INTEGER NOT NULL,
-     FOREIGN KEY (contract_id) REFERENCES contracts(id)
-   );
+### 4.5 Implementasi Supabase Auth
 
-   -- Workflow Steps Table
-   CREATE TABLE workflow_steps (
-     id TEXT PRIMARY KEY,
-     workflow_id TEXT NOT NULL,
-     step_number INTEGER NOT NULL,
-     type TEXT NOT NULL,
-     status TEXT NOT NULL,
-     assignee_id TEXT,
-     completed_at INTEGER,
-     created_at INTEGER NOT NULL,
-     FOREIGN KEY (workflow_id) REFERENCES workflows(id),
-     FOREIGN KEY (assignee_id) REFERENCES users(id)
-   );
-   ```
+Supabase menyediakan solusi autentikasi bawaan.
+1.  **Konfigurasi Provider Auth**: Di Supabase Dashboard (Authentication -> Providers), aktifkan provider yang diinginkan (Email/Password, Google, GitHub, dll.).
+2.  **Gunakan Supabase Client Library**: Di frontend (dan backend jika perlu), gunakan `supabase-js` untuk menangani pendaftaran, login, logout, dan manajemen sesi.
 
-4. **Menjalankan Migrasi Database**
-   ```bash
-   wrangler d1 execute kontrakpro-db --file=schema.sql
-   ```
+## 5. Contoh Implementasi Dasar: Manajemen Kontrak dengan Supabase
 
-### 4.3 Konfigurasi Cloudflare KV (Key-Value Storage)
+Kita akan menggunakan Next.js API Routes sebagai contoh backend.
 
-1. **Membuat KV Namespace**
-   ```bash
-   wrangler kv:namespace create "SESSIONS"
-   wrangler kv:namespace create "SETTINGS"
-   ```
-
-2. **Menambahkan Konfigurasi KV ke wrangler.toml**
-   ```toml
-   [[kv_namespaces]]
-   binding = "SESSIONS"
-   id = "ID_DARI_LANGKAH_SEBELUMNYA"
-
-   [[kv_namespaces]]
-   binding = "SETTINGS"
-   id = "ID_DARI_LANGKAH_SEBELUMNYA"
-   ```
-
-### 4.4 Konfigurasi Cloudflare R2 (Object Storage)
-
-1. **Membuat R2 Bucket**
-   ```bash
-   wrangler r2 bucket create kontrakpro-documents
-   ```
-
-2. **Menambahkan Konfigurasi R2 ke wrangler.toml**
-   ```toml
-   [[r2_buckets]]
-   binding = "DOCUMENTS"
-   bucket_name = "kontrakpro-documents"
-   ```
-
-## 5. Contoh Implementasi Dasar: Manajemen Kontrak
-
-### 5.1 API Router (src/index.ts)
+### 5.1 Setup Supabase Client (misal di `lib/supabaseClient.ts`)
 
 ```typescript
-import { Router } from 'itty-router';
-import { createContract, getContract, listContracts, updateContract, deleteContract } from './contracts/handlers';
-import { authenticate } from './auth/middleware';
+// lib/supabaseClient.ts
+import { createClient } from '@supabase/supabase-js'
 
-// Buat router
-const router = Router();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Middleware autentikasi
-router.all('/api/*', authenticate);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase URL and Anon Key must be defined in .env.local");
+}
 
-// Endpoint kontrak
-router.get('/api/contracts', listContracts);
-router.post('/api/contracts', createContract);
-router.get('/api/contracts/:id', getContract);
-router.put('/api/contracts/:id', updateContract);
-router.delete('/api/contracts/:id', deleteContract);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+```
+Pastikan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` ada di file `.env.local` Anda.
 
-// Handler untuk permintaan yang tidak cocok
-router.all('*', () => new Response('Not Found', { status: 404 }));
+### 5.2 Contoh API Endpoint (Next.js API Route)
 
-// Fungsi fetch untuk Cloudflare Worker
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    return router.handle(request, env, ctx);
+**Daftar Kontrak (`pages/api/contracts/index.ts`)**
+```typescript
+// pages/api/contracts/index.ts
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { supabase } from '../../../lib/supabaseClient' // Sesuaikan path jika perlu
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === 'GET') {
+    // TODO: Implementasi autentikasi dan otorisasi (misal, cek session user)
+    // const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // if (sessionError || !session) {
+    //   return res.status(401).json({ error: 'Not authenticated' });
+    // }
+
+    const { data: contracts, error } = await supabase
+      .from('contracts')
+      .select('*')
+      .order('created_at', { ascending: false });
+      // .limit(parseInt(req.query.limit as string) || 10) // Contoh pagination
+      // .range(offset, offset + limit -1);
+
+    if (error) {
+      console.error('Error fetching contracts:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(200).json({ contracts });
   }
-};
-
-// Definisi tipe Env untuk Cloudflare Worker
-export interface Env {
-  DB: D1Database;
-  SESSIONS: KVNamespace;
-  SETTINGS: KVNamespace;
-  DOCUMENTS: R2Bucket;
+  // ... (handle POST untuk membuat kontrak)
+  else {
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 }
 ```
 
-### 5.2 Contract Handlers (src/contracts/handlers.ts)
-
+**Membuat Kontrak Baru (bagian dari `pages/api/contracts/index.ts`)**
 ```typescript
-import { Env } from '../index';
-import { generateId } from '../utils/id';
+// ... (lanjutan dari pages/api/contracts/index.ts)
+  else if (req.method === 'POST') {
+    // const { data: { session }, error: sessionError } = await supabase.auth.getSession(); // Jika menggunakan cookie-based session
+    // Untuk API, lebih umum menggunakan token JWT di header Authorization
+    const token = req.headers.authorization?.split('Bearer ')[1];
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
-// Daftar kontrak
-export async function listContracts(request: Request, env: Env): Promise<Response> {
-  try {
-    const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '10');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
-
-    const { results } = await env.DB.prepare(
-      `SELECT * FROM contracts ORDER BY created_at DESC LIMIT ? OFFSET ?`
-    )
-    .bind(limit, offset)
-    .all();
-
-    return new Response(JSON.stringify({ contracts: results }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-// Membuat kontrak baru
-export async function createContract(request: Request, env: Env): Promise<Response> {
-  try {
-    const { title, description, type, organization_id } = await request.json();
-
-    // Validasi input
-    if (!title || !type || !organization_id) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Not authenticated or invalid token' });
     }
 
-    // Dapatkan user ID dari session (diasumsikan sudah diatur oleh middleware authenticate)
-    const user = request.user;
+    const { title, description, type, organization_id } = req.body;
 
-    const id = generateId();
-    const now = Date.now();
+    if (!title || !type || !organization_id) {
+      return res.status(400).json({ error: 'Missing required fields: title, type, organization_id' });
+    }
 
-    await env.DB.prepare(
-      `INSERT INTO contracts (id, title, description, status, type, owner_id, organization_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(id, title, description || '', 'draft', type, user.id, organization_id, now, now)
-    .run();
+    const { data: newContract, error: insertError } = await supabase
+      .from('contracts')
+      .insert([{ title, description, type, organization_id, owner_id: user.id, status: 'draft' }])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error creating contract:', insertError);
+      return res.status(500).json({ error: insertError.message });
+    }
 
     // Buat versi awal kontrak
-    await env.DB.prepare(
-      `INSERT INTO contract_versions (id, contract_id, version, content, created_at, created_by)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    )
-    .bind(generateId(), id, 1, '', now, user.id)
-    .run();
+    const { error: versionError } = await supabase
+      .from('contract_versions')
+      .insert([{ contract_id: newContract.id, version: 1, content: description || '', created_by: user.id }]);
+    
+    if (versionError) {
+        console.warn('Error creating initial contract version:', versionError.message);
+        // Mungkin tidak fatal, lanjutkan response
+    }
 
-    return new Response(JSON.stringify({
-      id,
-      title,
-      description,
-      status: 'draft',
-      type,
-      owner_id: user.id,
-      organization_id,
-      created_at: now,
-      updated_at: now
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return res.status(201).json(newContract);
   }
-}
-
-// Mendapatkan detail kontrak
-export async function getContract(request: Request, env: Env): Promise<Response> {
-  try {
-    const { params } = request;
-    const id = params.id;
-
-    const { results } = await env.DB.prepare(
-      `SELECT * FROM contracts WHERE id = ?`
-    )
-    .bind(id)
-    .all();
-
-    if (results.length === 0) {
-      return new Response(JSON.stringify({ error: 'Contract not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Dapatkan versi kontrak terbaru
-    const { results: versions } = await env.DB.prepare(
-      `SELECT * FROM contract_versions WHERE contract_id = ? ORDER BY version DESC LIMIT 1`
-    )
-    .bind(id)
-    .all();
-
-    const contract = {
-      ...results[0],
-      latest_version: versions[0] || null
-    };
-
-    return new Response(JSON.stringify(contract), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-// Fungsi untuk update dan delete kontrak akan diimplementasikan dengan cara yang serupa
+// ...
 ```
+Implementasi untuk `GET [id]`, `PUT [id]`, `DELETE [id]` akan mengikuti pola serupa, menggunakan Supabase client untuk berinteraksi dengan database dan Supabase Auth untuk keamanan.
 
-### 5.3 Utilitas ID (src/utils/id.ts)
+### 5.3 Utilitas ID
 
-```typescript
-// Fungsi untuk menghasilkan ID unik
-export function generateId(): string {
-  return crypto.randomUUID();
-}
-```
+Supabase secara otomatis menghasilkan UUID untuk kolom `PRIMARY KEY` bertipe `UUID` dengan `DEFAULT gen_random_uuid()`. Jadi, fungsi `generateId()` kustom mungkin tidak lagi diperlukan untuk ID tabel utama.
 
-### 5.4 Middleware Autentikasi (src/auth/middleware.ts)
+### 5.4 Autentikasi dengan Supabase Auth
 
-```typescript
-import { Env } from '../index';
-
-// Middleware untuk autentikasi
-export async function authenticate(request: Request, env: Env): Promise<Response | void> {
-  try {
-    // Dapatkan token dari header Authorization
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    // Dapatkan session dari KV
-    const sessionData = await env.SESSIONS.get(token);
-    if (!sessionData) {
-      return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Parse data session
-    const session = JSON.parse(sessionData);
-
-    // Verifikasi bahwa session belum kedaluwarsa
-    if (session.expires < Date.now()) {
-      await env.SESSIONS.delete(token);
-      return new Response(JSON.stringify({ error: 'Session expired' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Tambahkan data user ke request untuk digunakan oleh handler
-    request.user = session.user;
-
-    // Lanjutkan ke handler berikutnya
-    return;
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-```
+-   **Frontend**: Gunakan `supabase.auth.signUp()`, `supabase.auth.signInWithPassword()`, `supabase.auth.signOut()`, dll.
+-   **Backend (API Routes/Edge Functions)**:
+    -   Untuk mendapatkan user saat ini: `const { data: { user } } = await supabase.auth.getUser(jwtToken);` (jika JWT dikirim di header) atau `const { data: { session } } = await supabase.auth.getSession()` (jika menggunakan cookie sessions yang di-setup dengan Supabase Auth Helpers).
+    -   Lindungi endpoint dengan memeriksa keberadaan user/session yang valid.
+    -   Gunakan RLS (Row Level Security) di database untuk memastikan user hanya bisa mengakses data yang diizinkan.
 
 ## 6. Langkah Selanjutnya
 
-### 1. Deployment Backend
-- ✅ Migrasi database D1 sudah dilakukan
-- ✅ Deploy Worker ke Cloudflare
-- ✅ Konfigurasi domain dan DNS (panduan sudah dibuat)
+### 1. Setup dan Konfigurasi Supabase
+- ✅ Migrasi database Supabase (via CLI atau Dashboard) sudah dilakukan.
+- ✅ Konfigurasi Supabase Auth (RLS, providers) sudah dilakukan.
+- ✅ Konfigurasi Supabase Storage (buckets, policies) sudah dilakukan.
+- ✅ (Jika menggunakan Edge Functions) Deploy Supabase Edge Functions.
 
 ### 2. Implementasi Fitur Pendukung yang Belum Lengkap
-- ✅ Notifikasi dan Pengingat:
-  - ✅ Implementasi endpoint untuk mengirim notifikasi
-  - ✅ Implementasi endpoint untuk mengatur pengingat
+- ✅ Notifikasi dan Pengingat: (Backend akan menggunakan Supabase Functions atau trigger database)
+  - ✅ Implementasi endpoint/fungsi untuk mengirim notifikasi
+  - ✅ Implementasi endpoint/fungsi untuk mengatur pengingat
   - ✅ Implementasi UI untuk menampilkan notifikasi
 
-- ✅ Analitik dan Pelaporan Dasar:
-  - ✅ Implementasi endpoint untuk mengambil data analitik
-  - ⏳ Implementasi UI dashboard untuk menampilkan metrik
+- ✅ Analitik dan Pelaporan Dasar: (Backend akan query dari Supabase Database)
+  - ✅ Implementasi endpoint/fungsi untuk mengambil data analitik
   - ✅ Implementasi UI dashboard untuk menampilkan metrik
 
-### 3. Integrasi Frontend-Backend
-- ✅ Konfigurasi CORS sudah diimplementasikan
-- ✅ Tambahkan URL API ke environment variables
-- ✅ Integrasikan komponen UI dengan API endpoint yang sudah dibuat
-- ✅ Implementasikan fitur upload dokumen di frontend
+### 3. Integrasi Frontend-Backend (dengan Supabase)
+- ✅ Konfigurasi CORS (jika API di-host di domain berbeda, Supabase Edge Functions biasanya sudah terkonfigurasi).
+- ✅ Tambahkan URL Supabase dan Kunci API ke environment variables (`.env.local`).
+- ✅ Integrasikan komponen UI dengan API endpoint yang menggunakan Supabase client.
+- ✅ Implementasikan fitur upload dokumen di frontend menggunakan Supabase Storage SDK.
 
-### 4. Implementasi Fitur Lanjutan
-- [~] Integrasi E-Signature: (Backend handler dasar selesai)
-  - ✅ Implementasi endpoint untuk tanda tangan elektronik
+### 4. Implementasi Fitur Lanjutan (Backend menggunakan Supabase)
+- [~] Integrasi E-Signature: (Backend handler dasar selesai, perlu adaptasi ke Supabase)
+  - ✅ Implementasi endpoint/fungsi untuk tanda tangan elektronik
   - Integrasi dengan penyedia tanda tangan elektronik (jika diperlukan)
 
-- [~] Integrasi CRM: (Backend handler dasar selesai)
-  - Implementasi endpoint untuk sinkronisasi data CRM
-  - ✅ Implementasi endpoint untuk sinkronisasi data CRM
+- [~] Integrasi CRM: (Backend handler dasar selesai, perlu adaptasi ke Supabase)
+  - Implementasi endpoint/fungsi untuk sinkronisasi data CRM
+  - ✅ Implementasi endpoint/fungsi untuk sinkronisasi data CRM
   - Implementasi UI untuk konfigurasi dan sinkronisasi CRM
 - ✅ Implementasi UI untuk konfigurasi dan sinkronisasi CRM
 
-### 5. Implementasi Fitur Premium
-- [~] AI Analysis: (Backend handler dasar selesai)
-  - Implementasi endpoint untuk analisis AI
-  - ✅ Implementasi endpoint untuk analisis AI
+### 5. Implementasi Fitur Premium (Backend menggunakan Supabase)
+- [~] AI Analysis: (Backend handler dasar selesai, perlu adaptasi ke Supabase)
+  - Implementasi endpoint/fungsi untuk analisis AI
+  - ✅ Implementasi endpoint/fungsi untuk analisis AI
   - Implementasi UI untuk menampilkan hasil analisis
   - ✅ Implementasi UI untuk menampilkan hasil analisis

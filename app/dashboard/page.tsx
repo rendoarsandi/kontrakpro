@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, Calendar, ChevronDown, Clock, FileText, Filter, Plus, Search, Shield } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,24 +25,57 @@ export default function DashboardPage() {
     }
   }, [router])
 
-  // Mock user name - replace with actual user data fetching
-  const [userName, setUserName] = useState("User");
+  const [userName, setUserName] = useState<string | null>(null);
+  const [totalContracts, setTotalContracts] = useState<number | null>(null);
+  const [totalContractsTrend, setTotalContractsTrend] = useState<string | null>(null);
+  const [pendingApproval, setPendingApproval] = useState<number | null>(null);
+  const [pendingApprovalSubtext, setPendingApprovalSubtext] = useState<string | null>(null);
+  const [dueThisWeek, setDueThisWeek] = useState<number | null>(null);
+  const [dueThisWeekSubtext, setDueThisWeekSubtext] = useState<string | null>(null);
+  const [riskScore, setRiskScore] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data or name from localStorage/context
-    const storedName = localStorage.getItem('userName'); // Example
-    if (storedName) {
-      setUserName(storedName);
-    }
-  }, []);
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Assuming user's name is in user_metadata or email as fallback
+        setUserName(user.user_metadata?.full_name || user.email || "User");
+      } else {
+        router.push('/login'); // Should be handled by the auth check below too
+      }
+    };
 
-  const getRiskBadgeVariant = (score: number): "default" | "destructive" | "outline" | "secondary" => {
-    if (score >= 80) return "default"; // Using 'default' for low risk (often green-ish by theme)
-    if (score >= 60) return "secondary"; // Using 'secondary' for medium risk
-    return "destructive"; // Destructive for high risk
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      // Placeholder: Replace with actual Supabase calls
+      // Example: const { data, error } = await supabase.rpc('get_dashboard_stats');
+      // For now, simulate a fetch with timeout
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      
+      setTotalContracts(123);
+      setTotalContractsTrend("+15% from last month");
+      setPendingApproval(12);
+      setPendingApprovalSubtext("4 require immediate action");
+      setDueThisWeek(7);
+      setDueThisWeekSubtext("2 renewals pending");
+      setRiskScore(85);
+      
+      setIsLoading(false);
+    };
+
+    fetchUserData();
+    fetchDashboardData();
+  }, [router]);
+
+  const getRiskBadgeVariant = (score: number | null): "default" | "destructive" | "outline" | "secondary" => {
+    if (score === null) return "outline";
+    if (score >= 80) return "default";
+    if (score >= 60) return "secondary";
+    return "destructive";
   };
-  const riskScore = 85; // Example risk score
-  const riskScoreLabel = riskScore >= 80 ? "Low Risk" : riskScore >= 60 ? "Medium Risk" : "High Risk";
+  
+  const riskScoreLabel = riskScore === null ? "Loading..." : riskScore >= 80 ? "Low Risk" : riskScore >= 60 ? "Medium Risk" : "High Risk";
 
   return (
     <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen">
@@ -49,7 +83,7 @@ export default function DashboardPage() {
       {/* For this page, we'll focus on the main content area */}
       <main className="flex-1 p-6 md:p-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Welcome back, {userName}!</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Welcome back, {userName || "Loading..."}!</h1>
           <p className="text-slate-600 dark:text-slate-400">Here's what's happening with your contracts today.</p>
         </div>
 
@@ -61,8 +95,8 @@ export default function DashboardPage() {
               <FileText className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">123</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">+15% from last month</p>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{isLoading ? "..." : totalContracts}</div>
+              {totalContractsTrend && !isLoading && <p className="text-xs text-slate-500 dark:text-slate-400">{totalContractsTrend}</p>}
             </CardContent>
           </Card>
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 dark:bg-slate-800/70">
@@ -71,8 +105,8 @@ export default function DashboardPage() {
               <Clock className="h-5 w-5 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">12</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">4 require immediate action</p>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{isLoading ? "..." : pendingApproval}</div>
+              {pendingApprovalSubtext && !isLoading && <p className="text-xs text-slate-500 dark:text-slate-400">{pendingApprovalSubtext}</p>}
             </CardContent>
           </Card>
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 dark:bg-slate-800/70">
@@ -81,8 +115,8 @@ export default function DashboardPage() {
               <Calendar className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">7</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">2 renewals pending</p>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{isLoading ? "..." : dueThisWeek}</div>
+              {dueThisWeekSubtext && !isLoading && <p className="text-xs text-slate-500 dark:text-slate-400">{dueThisWeekSubtext}</p>}
             </CardContent>
           </Card>
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 dark:bg-slate-800/70">
@@ -92,26 +126,30 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center space-x-2">
-                <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{riskScore}%</div>
-                <Badge 
-                  variant={getRiskBadgeVariant(riskScore)} 
-                  className={cn("text-xs", {
-                    "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300": riskScore >= 80,
-                    "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300": riskScore >= 60 && riskScore < 80,
-                    "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300": riskScore < 60,
-                  })}
-                >
-                  {riskScoreLabel}
-                </Badge>
+                <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{isLoading ? "..." : riskScore}%</div>
+                {!isLoading && riskScore !== null && (
+                  <Badge 
+                    variant={getRiskBadgeVariant(riskScore)} 
+                    className={cn("text-xs", {
+                      "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300": riskScore >= 80,
+                      "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300": riskScore >= 60 && riskScore < 80,
+                      "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300": riskScore < 60,
+                    })}
+                  >
+                    {riskScoreLabel}
+                  </Badge>
+                )}
               </div>
-              <Progress 
-                value={riskScore} 
-                className={cn("mt-2 h-2", {
-                  "[&>div]:bg-green-500": riskScore >= 80, // Target the inner div for color
-                  "[&>div]:bg-yellow-500": riskScore >= 60 && riskScore < 80,
-                  "[&>div]:bg-red-500": riskScore < 60,
-                })} 
-              />
+              {!isLoading && riskScore !== null && (
+                <Progress 
+                  value={riskScore} 
+                  className={cn("mt-2 h-2", {
+                    "[&>div]:bg-green-500": riskScore >= 80,
+                    "[&>div]:bg-yellow-500": riskScore >= 60 && riskScore < 80,
+                    "[&>div]:bg-red-500": riskScore < 60,
+                  })} 
+                />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -137,7 +175,7 @@ export default function DashboardPage() {
                   <CardTitle className="text-slate-800 dark:text-slate-100">Recent Activity</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">Your contract activity from the past 7 days</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center text-slate-500 dark:text-slate-400">
+                <CardContent className="min-h-[250px] sm:min-h-[300px] overflow-auto text-slate-500 dark:text-slate-400">
                   {/* TODO: Add ContractActivityChart component here */}
                   <p>Contract Activity Chart Placeholder</p>
                 </CardContent>
@@ -149,7 +187,7 @@ export default function DashboardPage() {
                   <CardTitle className="text-slate-800 dark:text-slate-100">Contract Types</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">Distribution by category</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center text-slate-500 dark:text-slate-400">
+                <CardContent className="min-h-[250px] sm:min-h-[300px] overflow-auto text-slate-500 dark:text-slate-400">
                   {/* TODO: Add ContractTypeChart component here */}
                   <p>Contract Type Chart Placeholder</p>
                 </CardContent>
@@ -163,7 +201,7 @@ export default function DashboardPage() {
                 <CardTitle className="text-slate-800 dark:text-slate-100">Recently Accessed Contracts</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-400">A list of your most recently viewed or modified contracts.</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center text-slate-500 dark:text-slate-400">
+              <CardContent className="min-h-[250px] sm:min-h-[300px] overflow-auto text-slate-500 dark:text-slate-400">
                 {/* TODO: Add recent contracts table component here */}
                 <p>Recent Contracts Table Placeholder</p>
               </CardContent>
@@ -176,7 +214,7 @@ export default function DashboardPage() {
                 <CardTitle className="text-slate-800 dark:text-slate-100">Performance Analytics</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-400">Key performance indicators and trends.</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center text-slate-500 dark:text-slate-400">
+              <CardContent className="min-h-[250px] sm:min-h-[300px] overflow-auto text-slate-500 dark:text-slate-400">
                 {/* TODO: Add analytics components here */}
                 <p>Analytics Dashboard Placeholder</p>
               </CardContent>

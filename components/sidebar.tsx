@@ -212,11 +212,6 @@ export const sidebarItems: SidebarItem[] = [
     icon: <BarChart3 className="h-4 w-4" />,
   },
   {
-    href: "/dashboard/notifications",
-    title: "Notifications",
-    icon: <Bell className="h-4 w-4" />,
-  },
-  {
     href: "/dashboard/audit-trail",
     title: "Audit Trail",
     icon: <History className="h-4 w-4" />,

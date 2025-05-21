@@ -14,22 +14,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { api } from "@/lib/api"
+// import { api } from "@/lib/api" // api.logout() will be replaced
+import { supabase } from "@/lib/supabaseClient" // Import Supabase client
+import { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js" // Import Supabase User type, AuthChangeEvent, Session
 
-interface UserData {
+interface AppUserData { // Renamed to avoid conflict with Lucide User icon
   id: string
   name: string
   email: string
-  role: string
+  role?: string // Role might not be directly on user object, often in metadata or separate table
 }
 
 export function UserNav() {
   const router = useRouter()
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const [appUser, setAppUser] = useState<AppUserData | null>(null) // Changed state variable name
   const [loading, setLoading] = useState(true)
 
   // Fungsi untuk mendapatkan inisial dari nama
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | undefined) => {
+    if (!name) return "U"
     return name
       .split(" ")
       .map((n) => n[0])
@@ -38,34 +41,54 @@ export function UserNav() {
       .substring(0, 2)
   }
 
-  // Fungsi untuk mendapatkan data user dari localStorage
-  const getUserData = () => {
-    if (typeof window !== "undefined") {
-      const userDataStr = localStorage.getItem("userData")
-      if (userDataStr) {
-        try {
-          const userData = JSON.parse(userDataStr)
-          setUserData(userData)
-        } catch (error) {
-          console.error("Error parsing user data:", error)
-        }
-      }
-    }
-    setLoading(false)
-  }
-
-  // Memuat data user saat komponen dimount
   useEffect(() => {
-    getUserData()
-  }, [])
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setAppUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          // Name and role might be in user_metadata, adjust as per your Supabase setup
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User",
+          role: session.user.user_metadata?.role || "User", 
+        });
+      }
+      setLoading(false);
+    };
+
+    fetchUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => { // Added types
+      if (event === "SIGNED_IN" && session?.user) {
+        setAppUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User",
+          role: session.user.user_metadata?.role || "User",
+        });
+      } else if (event === "SIGNED_OUT") {
+        setAppUser(null)
+        router.push("/login") // Redirect to login on sign out
+      }
+      // No need to setLoading(false) here again as initial load handles it
+    });
+
+    return () => {
+      authListener?.unsubscribe()
+    }
+  }, [router])
 
   // Fungsi untuk logout
   const handleLogout = async () => {
     try {
-      await api.logout()
-      router.push("/login")
-    } catch (error) {
-      console.error("Error logging out:", error)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Error logging out:", error.message)
+      }
+      // onAuthStateChange listener will handle redirect via setAppUser(null)
+      // router.push("/login") // Can be redundant if onAuthStateChange handles it
+    } catch (error: any) {
+      console.error("Error logging out:", error.message)
     }
   }
 
@@ -84,16 +107,16 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>{userData ? getInitials(userData.name) : "U"}</AvatarFallback>
+            <AvatarFallback>{getInitials(appUser?.name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userData?.name || "User"}</p>
+            <p className="text-sm font-medium leading-none">{appUser?.name || "User"}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {userData?.email || "user@example.com"}
+              {appUser?.email || "user@example.com"}
             </p>
           </div>
         </DropdownMenuLabel>

@@ -5,7 +5,8 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Eye, EyeOff, FileText, Loader2, Shield, Lock } from "lucide-react"
+import { Bell, Eye, EyeOff, FileText, Loader2, Shield, Lock, Chrome } from "lucide-react" // Changed ChromeIcon to Chrome
+import { supabase } from "@/lib/supabaseClient" // Import Supabase client
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,32 +27,55 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
+      if (error) {
+        throw error
       }
 
-      // Simpan token di localStorage
-      localStorage.setItem('token', data.token)
-      
-      // Redirect ke dashboard
-      router.push("/dashboard")
+      if (data.session) {
+        // Supabase client handles session storage automatically.
+        // You might want to store additional user profile data if needed,
+        // e.g., from a 'profiles' table linked to auth.users.
+        // For now, just redirect.
+        router.push("/dashboard")
+      } else {
+        // Should not happen if error is not thrown, but as a fallback:
+        console.error('Login successful but no session data received.')
+        // Add toast or alert for this unusual case
+      }
     } catch (error: any) {
-      console.error('Login failed:', error)
-      // Tambahkan toast atau alert untuk menampilkan error
+      console.error('Login failed:', error.message)
+      // Add toast or alert for login error (e.g., invalid credentials)
+      // Example: toast({ title: "Login Failed", description: error.message, variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleLogin = async () => { // Corrected: Added "=>" and braces
+    try {
+      setIsLoading(true); // Optional: show loader for Google login too
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback` // Or your specific callback URL
+        }
+      });
+      if (error) {
+        console.error('Google login error:', error.message);
+        // Add toast or alert for Google login error
+      }
+      // Supabase handles redirection, no explicit router.push needed here for starting OAuth
+    } catch (error: any) {
+      console.error('Google login failed:', error);
+    } finally {
+      setIsLoading(false); // Optional: hide loader
+    }
+  };
 
   // Tambahkan fungsi mock login
   const handleMockLogin = async () => {
@@ -163,10 +187,20 @@ export default function LoginPage() {
 
               <div className="mt-4">
                 <Separator className="my-4" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading}
+                >
+                  <Chrome className="h-4 w-4" /> {/* Changed ChromeIcon to Chrome */}
+                  Login with Google
+                </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full mt-2" // Added margin-top
                   onClick={handleMockLogin}
                 >
                   Demo Login (Mock)

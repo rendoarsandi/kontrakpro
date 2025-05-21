@@ -1,0 +1,89 @@
+[debug] [2025-05-21T02:53:25.573Z] ----------------------------------------------------------------------
+[debug] [2025-05-21T02:53:25.575Z] Command:       /home/gitpod/.nvm/versions/node/v22.13.1/bin/node /home/gitpod/.nvm/versions/node/v22.13.1/bin/firebase login --reauth
+[debug] [2025-05-21T02:53:25.576Z] CLI Version:   14.4.0
+[debug] [2025-05-21T02:53:25.576Z] Platform:      linux
+[debug] [2025-05-21T02:53:25.576Z] Node Version:  v22.13.1
+[debug] [2025-05-21T02:53:25.576Z] Time:          Wed May 21 2025 02:53:25 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-05-21T02:53:25.577Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-21T02:53:25.579Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=789730152&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-05-21T02:53:25.755Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-05-21T02:53:25.755Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2025-05-21T02:53:49.551Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2025-05-21T02:53:49.551Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"e7d4d015-0b0d-40eb-af9a-947cc7750298"}
+[debug] [2025-05-21T02:53:49.941Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2025-05-21T02:53:49.941Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"dgHRVdJIF3aJ6GTh5zcbzevqZvVHSy1qSGAwLPn1q1U"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    E7D4D
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=BL85rOe1BRKUGTFYozp1rZ3qdqMSJNzHRm8b2BLt80U&session=e7d4d015-0b0d-40eb-af9a-947cc7750298&attest=dgHRVdJIF3aJ6GTh5zcbzevqZvVHSy1qSGAwLPn1q1U
+[info] 
+[info] 3. Paste or enter the authorization code below once you have it:
+[info] 
+[debug] [2025-05-21T02:54:30.847Z] ----------------------------------------------------------------------
+[debug] [2025-05-21T02:54:30.849Z] Command:       /home/gitpod/.nvm/versions/node/v22.13.1/bin/node /home/gitpod/.nvm/versions/node/v22.13.1/bin/firebase login --reauth
+[debug] [2025-05-21T02:54:30.849Z] CLI Version:   14.4.0
+[debug] [2025-05-21T02:54:30.850Z] Platform:      linux
+[debug] [2025-05-21T02:54:30.850Z] Node Version:  v22.13.1
+[debug] [2025-05-21T02:54:30.850Z] Time:          Wed May 21 2025 02:54:30 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-05-21T02:54:30.850Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=768045898&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-05-21T02:56:10.719Z] ----------------------------------------------------------------------
+[debug] [2025-05-21T02:56:10.721Z] Command:       /home/gitpod/.nvm/versions/node/v22.13.1/bin/node /home/gitpod/.nvm/versions/node/v22.13.1/bin/firebase login --reauth
+[debug] [2025-05-21T02:56:10.722Z] CLI Version:   14.4.0
+[debug] [2025-05-21T02:56:10.722Z] Platform:      linux
+[debug] [2025-05-21T02:56:10.722Z] Node Version:  v22.13.1
+[debug] [2025-05-21T02:56:10.722Z] Time:          Wed May 21 2025 02:56:10 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-05-21T02:56:10.722Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=96961799&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-05-21T02:56:37.070Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2025-05-21T02:56:37.070Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"b21aa1c8-366f-40ca-8562-2b1e1d0a9f2a"}
+[debug] [2025-05-21T02:56:37.378Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2025-05-21T02:56:37.378Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"FaIpYk2ahdZd9l2kFsW5xoubssLOKIxuOyfYJgpuT6o"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    B21AA
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=wZFJ34XjgY5MbslBmtYcg8be-7SsVP34aZoYsL9n3s4&session=b21aa1c8-366f-40ca-8562-2b1e1d0a9f2a&attest=FaIpYk2ahdZd9l2kFsW5xoubssLOKIxuOyfYJgpuT6o
+[info] 
+[info] 3. Paste or enter the authorization code below once you have it:
+[info] 
+[debug] [2025-05-21T02:56:58.463Z] ----------------------------------------------------------------------
+[debug] [2025-05-21T02:56:58.465Z] Command:       /home/gitpod/.nvm/versions/node/v22.13.1/bin/node /home/gitpod/.nvm/versions/node/v22.13.1/bin/firebase login --reauth
+[debug] [2025-05-21T02:56:58.465Z] CLI Version:   14.4.0
+[debug] [2025-05-21T02:56:58.465Z] Platform:      linux
+[debug] [2025-05-21T02:56:58.466Z] Node Version:  v22.13.1
+[debug] [2025-05-21T02:56:58.466Z] Time:          Wed May 21 2025 02:56:58 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-05-21T02:56:58.466Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=98719234&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
