@@ -1,11 +1,9 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react" // Changed import type and combined with useState
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, FileText, Loader2 } from "lucide-react"
+import { Eye, EyeOff, FileText, Loader2, Chrome } from "lucide-react" // Added Chrome
 import { supabase } from "@/lib/supabaseClient" // Import Supabase client
 
 import { Button } from "@/components/ui/button"
@@ -77,6 +75,28 @@ export default function SignupPage() {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleSignup = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) {
+        console.error('Google signup error:', error.message);
+        setSignupMessage(`Google signup failed: ${error.message}`);
+      }
+      // Supabase handles redirection
+    } catch (error: any) {
+      console.error('Google signup failed:', error);
+      setSignupMessage(`Google signup failed: ${error.message || 'An unexpected error occurred.'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMockSignup = () => {
     setIsLoading(true)
@@ -231,8 +251,18 @@ export default function SignupPage() {
 
               <div className="mt-4">
                 <Separator className="my-4" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 mb-2" // Added mb-2
+                  onClick={handleGoogleSignup}
+                  disabled={isLoading}
+                >
+                  <Chrome className="h-4 w-4" />
+                  Sign up with Google
+                </Button>
                 <Button variant="outline" className="w-full" onClick={handleMockSignup} disabled={isLoading}>
-                  {isLoading ? (
+                  {isLoading && !signupMessage?.includes("Google") ? ( // Ensure loader shows for the correct action
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Redirecting...
