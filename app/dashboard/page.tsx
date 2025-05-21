@@ -18,14 +18,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Check authentication on component mount
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/login')
-    }
-  }, [router])
-
   const [userName, setUserName] = useState<string | null>(null);
   const [totalContracts, setTotalContracts] = useState<number | null>(null);
   const [totalContractsTrend, setTotalContractsTrend] = useState<string | null>(null);
@@ -37,18 +29,21 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Assuming user's name is in user_metadata or email as fallback
-        setUserName(user.user_metadata?.full_name || user.email || "User");
-      } else {
-        router.push('/login'); // Should be handled by the auth check below too
-      }
-    };
-
-    const fetchDashboardData = async () => {
+    const checkAuthAndFetchData = async () => {
       setIsLoading(true);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error("Session error or no session:", sessionError);
+        router.push('/login');
+        return;
+      }
+
+      // Session exists, proceed to fetch user data and dashboard data
+      const user = session.user;
+      setUserName(user.user_metadata?.full_name || user.email || "User");
+
+      // Fetch dashboard data
       try {
         // Fetch total contracts
         const { count: totalContractsCount, error: totalError } = await supabase
@@ -97,9 +92,8 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     };
-
-    fetchUserData();
-    fetchDashboardData();
+    
+    checkAuthAndFetchData();
   }, [router]);
 
   const getRiskBadgeVariant = (score: number | null): "default" | "destructive" | "outline" | "secondary" => {
