@@ -58,7 +58,7 @@ export function UserNav() {
 
     fetchUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => { // Added types
+    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => { // Added types
       if (event === "SIGNED_IN" && session?.user) {
         setAppUser({
           id: session.user.id,
