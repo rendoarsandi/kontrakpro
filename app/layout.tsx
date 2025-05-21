@@ -1,6 +1,8 @@
 import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -24,6 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
         >
           {children}
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

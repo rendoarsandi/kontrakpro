@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-
+import * as React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -80,19 +79,20 @@ export default function LoginPage() {
   // Tambahkan fungsi mock login
   const handleMockLogin = async () => {
     try {
-      // Set mock token dan user data
-      localStorage.setItem('token', 'mock-token-123')
+      // Set mock token dan user data using details from the Supabase mock user
+      localStorage.setItem('token', 'mock-token-123') // This token is still frontend-only for the mock
       localStorage.setItem('user', JSON.stringify({
-        id: 'mock-user-123',
-        email: 'demo@kontrakpro.com',
-        name: 'Demo User',
-        organization: {
-          id: 'mock-org-123',
-          name: 'Demo Organization'
+        id: '646e21b8-e468-4907-836b-d2a78e4d3eb3', // Actual mock user ID from Supabase
+        email: 'mockuser@example.com', // Actual mock user email
+        name: 'Mock User', // Actual mock user name
+        // You might need to fetch full organization details or adjust how your app uses this
+        organization: { 
+          id: '86c31277-cba9-4413-9105-5e7a7e62b0d9', // Actual mock organization ID
+          name: 'Mock Organization Inc.' // Actual mock organization name
         }
       }))
       
-      console.log('Mock login successful, redirecting to dashboard...')
+      console.log('Mock login successful (using Supabase mock user details), redirecting to dashboard...')
       
       // Gunakan await untuk memastikan redirect selesai
       await router.push('/dashboard')

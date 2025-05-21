@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, Calendar, ChevronDown, Clock, FileText, Filter, Plus, Search, Shield } from "lucide-react"
@@ -48,20 +49,53 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
       setIsLoading(true);
-      // Placeholder: Replace with actual Supabase calls
-      // Example: const { data, error } = await supabase.rpc('get_dashboard_stats');
-      // For now, simulate a fetch with timeout
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-      
-      setTotalContracts(123);
-      setTotalContractsTrend("+15% from last month");
-      setPendingApproval(12);
-      setPendingApprovalSubtext("4 require immediate action");
-      setDueThisWeek(7);
-      setDueThisWeekSubtext("2 renewals pending");
-      setRiskScore(85);
-      
-      setIsLoading(false);
+      try {
+        // Fetch total contracts
+        const { count: totalContractsCount, error: totalError } = await supabase
+          .from('contracts')
+          .select('*', { count: 'exact', head: true });
+        if (totalError) throw totalError;
+        setTotalContracts(totalContractsCount);
+        setTotalContractsTrend(null); // Remove hardcoded trend
+
+        // Fetch pending approval (status = 'draft')
+        const { count: pendingCount, error: pendingError } = await supabase
+          .from('contracts')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'draft');
+        if (pendingError) throw pendingError;
+        setPendingApproval(pendingCount);
+        setPendingApprovalSubtext(null); // Remove hardcoded subtext
+
+        // Fetch due this week
+        const today = new Date();
+        const oneWeekFromToday = new Date(today);
+        oneWeekFromToday.setDate(today.getDate() + 7);
+        
+        const { count: dueCount, error: dueError } = await supabase
+          .from('contracts')
+          .select('*', { count: 'exact', head: true })
+          .gte('end_date', today.toISOString().split('T')[0])
+          .lte('end_date', oneWeekFromToday.toISOString().split('T')[0]);
+        if (dueError) throw dueError;
+        setDueThisWeek(dueCount);
+        setDueThisWeekSubtext(null); // Remove hardcoded subtext
+
+        setRiskScore(null); // Remove hardcoded risk score
+
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        // Set states to null or 0 in case of error to avoid showing stale/hardcoded data
+        setTotalContracts(0);
+        setPendingApproval(0);
+        setDueThisWeek(0);
+        setRiskScore(null);
+        setTotalContractsTrend(null);
+        setPendingApprovalSubtext(null);
+        setDueThisWeekSubtext(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchUserData();
