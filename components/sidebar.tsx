@@ -103,8 +103,9 @@ export function Sidebar({ className, items = sidebarItems, ...props }: SidebarNa
       >
         <div className={cn("flex flex-col transition-all duration-300 ease-in-out", isHovering ? "w-64" : "w-16")}>
           <div className="flex h-14 items-center border-b px-4">
+            {/* Updated Link to always point to the landing page "/" */}
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <FileText className="h-6 w-6" />
+              <FileText className="h-6 w-6 text-primary" /> {/* Added text-primary for consistency */}
               {isHovering && <span className="transition-opacity duration-300">KontrakPro</span>}
             </Link>
           </div>

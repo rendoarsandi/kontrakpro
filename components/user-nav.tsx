@@ -42,15 +42,36 @@ export function UserNav() {
   }
 
   useEffect(() => {
+    const mockToken = localStorage.getItem('token');
+    const mockUserString = localStorage.getItem('user');
+
+    if (mockToken === 'mock-token-123' && mockUserString) {
+      try {
+        const mockUserData = JSON.parse(mockUserString);
+        setAppUser({
+          id: mockUserData.id,
+          email: mockUserData.email,
+          name: mockUserData.name,
+          // role: mockUserData.role // Assuming role is part of mock user data if needed
+        });
+        setLoading(false);
+        // For mock login, we don't subscribe to Supabase auth changes or fetch Supabase session
+        // as it would override the mock state or redirect.
+        return; // Exit early for mock session
+      } catch (e) {
+        console.error("Failed to parse mock user data from localStorage", e);
+        // Fall through to normal Supabase auth if mock data is invalid
+      }
+    }
+
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setAppUser({
           id: session.user.id,
           email: session.user.email || "",
-          // Name and role might be in user_metadata, adjust as per your Supabase setup
           name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User",
-          role: session.user.user_metadata?.role || "User", 
+          role: session.user.user_metadata?.role || "User",
         });
       }
       setLoading(false);
@@ -58,7 +79,12 @@ export function UserNav() {
 
     fetchUser();
 
-    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => { // Added types
+    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      // Ignore auth changes if it's a mock session to prevent override/redirect
+      if (localStorage.getItem('token') === 'mock-token-123') {
+        return;
+      }
+
       if (event === "SIGNED_IN" && session?.user) {
         setAppUser({
           id: session.user.id,
@@ -67,30 +93,43 @@ export function UserNav() {
           role: session.user.user_metadata?.role || "User",
         });
       } else if (event === "SIGNED_OUT") {
-        setAppUser(null)
-        router.push("/login") // Redirect to login on sign out
+        setAppUser(null);
+        router.push("/login"); // Redirect to login on sign out
       }
-      // No need to setLoading(false) here again as initial load handles it
     });
 
     return () => {
-      authListener?.unsubscribe()
-    }
-  }, [router])
+      authListener?.unsubscribe();
+    };
+  }, [router]);
 
   // Fungsi untuk logout
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error("Error logging out:", error.message)
-      }
-      // onAuthStateChange listener will handle redirect via setAppUser(null)
-      // router.push("/login") // Can be redundant if onAuthStateChange handles it
-    } catch (error: any) {
-      console.error("Error logging out:", error.message)
+    // Check if it's a mock session
+    const mockToken = localStorage.getItem('token');
+    if (mockToken === 'mock-token-123') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setAppUser(null);
+      router.push("/login");
+      return;
     }
-  }
+
+    // Original Supabase logout
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error logging out:", error.message);
+        // Optionally, inform the user about the error
+      }
+      // The onAuthStateChange listener should handle setting appUser to null and redirecting.
+      // If onAuthStateChange is not reliably redirecting, uncomment the line below:
+      // router.push("/login"); 
+    } catch (error: any) {
+      console.error("Error logging out:", error.message);
+      // Optionally, inform the user about the error
+    }
+  };
 
   if (loading) {
     return (
