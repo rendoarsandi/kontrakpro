@@ -17,7 +17,7 @@
 
 ### E-Signature
 - [x] Integrasi tanda tangan elektronik (Backend handler dasar dibuat)
-- [ ] Verifikasi identitas penandatangan
+- [~] Verifikasi identitas penandatangan (Backend OTP logic implemented)
 - [x] Pelacakan status penandatanganan (Backend handler dasar dibuat)
 - [ ] Bukti tanda tangan yang aman
 
@@ -49,7 +49,7 @@ Berdasarkan analisis implementasi saat ini, berikut adalah fitur-fitur yang belu
 
 2. **E-Signature**:
    - [x] Belum ada implementasi integrasi tanda tangan elektronik (Backend handler dasar ada)
-   - [x] Belum ada implementasi verifikasi identitas penandatangan
+   - [~] Belum ada implementasi verifikasi identitas penandatangan (Backend OTP logic implemented, UI/email pending)
    - [x] Belum ada implementasi pelacakan status penandatanganan (Backend handler dasar ada)
 
 3. ~~**Analitik dan Pelaporan**~~: ✅
