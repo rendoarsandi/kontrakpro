@@ -94,37 +94,6 @@ export default function LoginPage() {
     }
   };
 
-  // const handleMockLogin = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     localStorage.setItem('token', 'mock-token-123')
-  //     localStorage.setItem('user', JSON.stringify({
-  //       id: '646e21b8-e468-4907-836b-d2a78e4d3eb3',
-  //       email: 'mockuser@example.com',
-  //       name: 'Mock User',
-  //       organization: {
-  //         id: '86c31277-cba9-4413-9105-5e7a7e62b0d9',
-  //         name: 'Mock Organization Inc.'
-  //       }
-  //     }))
-  //
-  //     toast({
-  //       title: "Demo Login Successful",
-  //       description: "Redirecting to dashboard...",
-  //     })
-  //     router.push('/dashboard')
-  //   } catch (error) {
-  //     console.error('Error during mock login:', error)
-  //     toast({
-  //       title: "Demo Login Failed",
-  //       description: "Could not perform demo login. Please try again.",
-  //       variant: "destructive",
-  //     })
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Left side - Login form */}
@@ -238,15 +207,6 @@ export default function LoginPage() {
                   <Chrome className="h-4 w-4" />
                   Login with Google
                 </Button>
-                {/* <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full"
-                  onClick={handleMockLogin}
-                  disabled={isLoading}
-                >
-                  Demo Login (Mock User)
-                </Button> */}
               </div>
             </CardContent>
             <CardFooter className="justify-center text-sm">

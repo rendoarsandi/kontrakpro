@@ -30,26 +30,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsLoading(true);
-    // Hapus atau komentari bagian mock session untuk memastikan data pengguna asli yang dimuat
-    // const mockToken = localStorage.getItem('token');
-    // const mockUserString = localStorage.getItem('user');
-    //
-    // if (mockToken === 'mock-token-123' && mockUserString) {
-    //   try {
-    //     const mockUserData = JSON.parse(mockUserString);
-    //     setUserName(mockUserData.name || "Mock User");
-    //     // Set mock data or defaults for other states if needed
-    //     setTotalContracts(10); // Example mock data
-    //     setPendingApproval(2);  // Example mock data
-    //     setDueThisWeek(1);      // Example mock data
-    //     setRiskScore(75);       // Example mock data
-    //     setIsLoading(false);
-    //     return; // Exit early for mock session, skip Supabase auth checks
-    //   } catch (e) {
-    //     console.error("Failed to parse mock user data from localStorage", e);
-    //     // Fall through to normal Supabase auth if mock data is invalid
-    //   }
-    // }
 
     const fetchData = async (session: any) => {
       if (!session?.user) {
@@ -63,30 +43,26 @@ export default function DashboardPage() {
       setUserName(user.user_metadata?.full_name || user.email || "User");
 
       try {
-        const { count: totalContractsCount, error: totalError } = await supabase
-          .from('contracts')
-          .select('*', { count: 'exact', head: true });
-        if (totalError) throw totalError;
-        setTotalContracts(totalContractsCount);
-
-        const { count: pendingCount, error: pendingError } = await supabase
-          .from('contracts')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'draft');
-        if (pendingError) throw pendingError;
-        setPendingApproval(pendingCount);
-
         const today = new Date();
         const oneWeekFromToday = new Date(today);
         oneWeekFromToday.setDate(today.getDate() + 7);
-        
-        const { count: dueCount, error: dueError } = await supabase
-          .from('contracts')
-          .select('*', { count: 'exact', head: true })
-          .gte('end_date', today.toISOString().split('T')[0])
-          .lte('end_date', oneWeekFromToday.toISOString().split('T')[0]);
-        if (dueError) throw dueError;
-        setDueThisWeek(dueCount);
+
+        const [totalContractsResult, pendingContractsResult, dueContractsResult] = await Promise.all([
+          supabase.from('contracts').select('*', { count: 'exact', head: true }),
+          supabase.from('contracts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+          supabase.from('contracts').select('*', { count: 'exact', head: true })
+            .gte('end_date', today.toISOString().split('T')[0])
+            .lte('end_date', oneWeekFromToday.toISOString().split('T')[0])
+        ]);
+
+        if (totalContractsResult.error) throw totalContractsResult.error;
+        setTotalContracts(totalContractsResult.count);
+
+        if (pendingContractsResult.error) throw pendingContractsResult.error;
+        setPendingApproval(pendingContractsResult.count);
+
+        if (dueContractsResult.error) throw dueContractsResult.error;
+        setDueThisWeek(dueContractsResult.count);
 
         // setRiskScore(null); // Assuming risk score might be calculated differently or fetched elsewhere
       } catch (error) {

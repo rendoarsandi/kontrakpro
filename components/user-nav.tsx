@@ -42,28 +42,6 @@ export function UserNav() {
   }
 
   useEffect(() => {
-    // Hapus atau komentari bagian mock session
-    // const mockToken = localStorage.getItem('token');
-    // const mockUserString = localStorage.getItem('user');
-    //
-    // if (mockToken === 'mock-token-123' && mockUserString) {
-    //   try {
-    //     const mockUserData = JSON.parse(mockUserString);
-    //     setAppUser({
-    //       id: mockUserData.id,
-    //       email: mockUserData.email,
-    //       name: mockUserData.name,
-    //       // role: mockUserData.role // Assuming role is part of mock user data if needed
-    //     });
-    //     setLoading(false);
-    //     // For mock login, we don't subscribe to Supabase auth changes or fetch Supabase session
-    //     // as it would override the mock state or redirect.
-    //     return; // Exit early for mock session
-    //   } catch (e) {
-    //     console.error("Failed to parse mock user data from localStorage", e);
-    //     // Fall through to normal Supabase auth if mock data is invalid
-    //   }
-    // }
 
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -101,15 +79,6 @@ export function UserNav() {
 
   // Fungsi untuk logout
   const handleLogout = async () => {
-    // Hapus atau komentari bagian mock session logout
-    // const mockToken = localStorage.getItem('token');
-    // if (mockToken === 'mock-token-123') {
-    //   localStorage.removeItem('token');
-    //   localStorage.removeItem('user');
-    //   setAppUser(null);
-    //   router.push("/login");
-    //   return;
-    // }
 
     // Original Supabase logout
     try {
@@ -151,7 +120,7 @@ export function UserNav() {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{appUser?.name || "User"}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {appUser?.email || "user@example.com"}
+              {appUser?.email || ""}
             </p>
           </div>
         </DropdownMenuLabel>
