@@ -68,7 +68,7 @@ function getAuthHeaders(isFormData: boolean = false) { // Tambahkan parameter is
 export const api = {
   // Auth
   login: async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    const response = await fetch(getApiUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -90,7 +90,7 @@ export const api = {
     name: string;
     organization_name: string;
   }) => {
-    const response = await fetch(`${API_URL}/api/auth/signup`, {
+    const response = await fetch(getApiUrl('/api/auth/signup'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
@@ -116,7 +116,7 @@ export const api = {
 
     if (token) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, { // Use NEXT_PUBLIC_API_URL
+        await fetch(getApiUrl('/api/auth/logout'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token })
@@ -146,7 +146,7 @@ export const api = {
       throw new Error('No token found');
     }
 
-    const response = await fetch(`${API_URL}/api/auth/refresh`, {
+    const response = await fetch(getApiUrl('/api/auth/refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token })
@@ -171,7 +171,7 @@ export const api = {
     search?: string;
   } = {}): Promise<ContractResponse> => {
     const queryString = new URLSearchParams(params as Record<string, string>).toString();
-    const response = await fetch(`${API_URL}/api/contracts?${queryString}`, {
+    const response = await fetch(getApiUrl(`/api/contracts?${queryString}`), {
       headers: getAuthHeaders()
     });
 
@@ -179,7 +179,7 @@ export const api = {
   },
 
   getContract: async (id: string) => {
-    const response = await fetch(`${API_URL}/api/contracts/${id}`, {
+    const response = await fetch(getApiUrl(`/api/contracts/${id}`), {
       headers: getAuthHeaders()
     });
 
@@ -187,7 +187,7 @@ export const api = {
   },
 
   createContract: async (contractData: FormData) => { // Ubah tipe argumen menjadi FormData
-    const response = await fetch(`${API_URL}/api/contracts`, {
+    const response = await fetch(getApiUrl('/api/contracts'), {
       method: 'POST',
       headers: getAuthHeaders(true), // Panggil getAuthHeaders dengan isFormData = true
       body: contractData // Kirim FormData langsung
@@ -202,7 +202,7 @@ export const api = {
     status?: string;
     type?: string;
   }) => {
-    const response = await fetch(`${API_URL}/api/contracts/${id}`, {
+    const response = await fetch(getApiUrl(`/api/contracts/${id}`), {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(contractData)
@@ -212,7 +212,7 @@ export const api = {
   },
 
   deleteContract: async (id: string) => {
-    const response = await fetch(`${API_URL}/api/contracts/${id}`, {
+    const response = await fetch(getApiUrl(`/api/contracts/${id}`), {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -226,13 +226,9 @@ export const api = {
     formData.append('file', file);
     formData.append('contractId', contractId);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
-
-    const response = await fetch(`${API_URL}/api/documents/upload`, {
+    const response = await fetch(getApiUrl('/api/documents/upload'), {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
+      headers: getAuthHeaders(true),
       body: formData
     });
 
@@ -240,7 +236,7 @@ export const api = {
   },
 
   downloadDocument: async (documentId: string) => {
-    const response = await fetch(`${API_URL}/api/documents/${documentId}`, {
+    const response = await fetch(getApiUrl(`/api/documents/${documentId}`), {
       headers: getAuthHeaders()
     });
 
@@ -267,7 +263,7 @@ export const api = {
 
   markNotificationAsRead: async (id: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/notifications/${id}/read`, {
+      const response = await fetch(getApiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
         headers: getAuthHeaders(),
       });
@@ -285,7 +281,7 @@ export const api = {
     status?: string;
   } = {}) => {
     const queryString = new URLSearchParams(params as Record<string, string>).toString();
-    const response = await fetch(`${API_URL}/api/reminders?${queryString}`, {
+    const response = await fetch(getApiUrl(`/api/reminders?${queryString}`), {
       headers: getAuthHeaders()
     });
 
@@ -299,7 +295,7 @@ export const api = {
     resource_id: string;
     due_date: number;
   }) => {
-    const response = await fetch(`${API_URL}/api/reminders`, {
+    const response = await fetch(getApiUrl('/api/reminders'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(reminderData)
@@ -309,7 +305,7 @@ export const api = {
   },
 
   deleteReminder: async (id: string) => {
-    const response = await fetch(`${API_URL}/api/reminders/${id}`, {
+    const response = await fetch(getApiUrl(`/api/reminders/${id}`), {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -324,7 +320,7 @@ export const api = {
   } = {}) => {
     try {
       const queryString = new URLSearchParams(params as Record<string, string>).toString();
-      const response = await fetch(`${API_URL}/api/analytics/summary?${queryString}`, {
+      const response = await fetch(getApiUrl(`/api/analytics/summary?${queryString}`), {
         headers: getAuthHeaders()
       });
 
@@ -397,7 +393,7 @@ export const api = {
   },
 
   executeAnalytics: async (analyticsRequest: any) => {
-    const response = await fetch(`${API_URL}/api/analytics/execute`, {
+    const response = await fetch(getApiUrl('/api/analytics/execute'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(analyticsRequest)
