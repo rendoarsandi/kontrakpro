@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, FileText, Menu, X } from "lucide-react";
+import { ArrowRight, FileSignature, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +29,8 @@ export function LandingHeader() {
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6 md:gap-8">
           <Link href="/" className="flex items-center space-x-2">
-            <FileText className="h-7 w-7 text-primary" />
-            <span className="inline-block text-xl font-bold text-foreground">KontrakPro</span>
+            <FileSignature className="h-7 w-7 text-primary" />
+            <span className="inline-block text-xl font-bold text-foreground animate-pulse">KontrakPro</span>
           </Link>
           <nav className="hidden md:flex md:gap-6 lg:gap-8">
             {[

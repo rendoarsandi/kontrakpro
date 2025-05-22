@@ -1,4 +1,5 @@
 import type React from "react"
+import { FileSignature } from "lucide-react" // Added FileSignature import
 
 import { Sidebar } from "@/components/sidebar"
 import { Toaster } from "@/components/ui/toaster"
@@ -13,7 +14,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="md:hidden sticky top-0 z-30 w-full border-b bg-background">
         <div className="flex h-14 items-center px-4">
           <div className="flex items-center gap-2 font-semibold">
-            <span className="text-lg">KontrakPro</span>
+            <FileSignature className="h-6 w-6 text-primary" />
+            <span className="text-lg animate-pulse">KontrakPro</span>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">
             <NotificationDropdown />

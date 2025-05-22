@@ -42,27 +42,28 @@ export function UserNav() {
   }
 
   useEffect(() => {
-    const mockToken = localStorage.getItem('token');
-    const mockUserString = localStorage.getItem('user');
-
-    if (mockToken === 'mock-token-123' && mockUserString) {
-      try {
-        const mockUserData = JSON.parse(mockUserString);
-        setAppUser({
-          id: mockUserData.id,
-          email: mockUserData.email,
-          name: mockUserData.name,
-          // role: mockUserData.role // Assuming role is part of mock user data if needed
-        });
-        setLoading(false);
-        // For mock login, we don't subscribe to Supabase auth changes or fetch Supabase session
-        // as it would override the mock state or redirect.
-        return; // Exit early for mock session
-      } catch (e) {
-        console.error("Failed to parse mock user data from localStorage", e);
-        // Fall through to normal Supabase auth if mock data is invalid
-      }
-    }
+    // Hapus atau komentari bagian mock session
+    // const mockToken = localStorage.getItem('token');
+    // const mockUserString = localStorage.getItem('user');
+    //
+    // if (mockToken === 'mock-token-123' && mockUserString) {
+    //   try {
+    //     const mockUserData = JSON.parse(mockUserString);
+    //     setAppUser({
+    //       id: mockUserData.id,
+    //       email: mockUserData.email,
+    //       name: mockUserData.name,
+    //       // role: mockUserData.role // Assuming role is part of mock user data if needed
+    //     });
+    //     setLoading(false);
+    //     // For mock login, we don't subscribe to Supabase auth changes or fetch Supabase session
+    //     // as it would override the mock state or redirect.
+    //     return; // Exit early for mock session
+    //   } catch (e) {
+    //     console.error("Failed to parse mock user data from localStorage", e);
+    //     // Fall through to normal Supabase auth if mock data is invalid
+    //   }
+    // }
 
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -80,11 +81,6 @@ export function UserNav() {
     fetchUser();
 
     const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      // Ignore auth changes if it's a mock session to prevent override/redirect
-      if (localStorage.getItem('token') === 'mock-token-123') {
-        return;
-      }
-
       if (event === "SIGNED_IN" && session?.user) {
         setAppUser({
           id: session.user.id,
@@ -105,15 +101,15 @@ export function UserNav() {
 
   // Fungsi untuk logout
   const handleLogout = async () => {
-    // Check if it's a mock session
-    const mockToken = localStorage.getItem('token');
-    if (mockToken === 'mock-token-123') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setAppUser(null);
-      router.push("/login");
-      return;
-    }
+    // Hapus atau komentari bagian mock session logout
+    // const mockToken = localStorage.getItem('token');
+    // if (mockToken === 'mock-token-123') {
+    //   localStorage.removeItem('token');
+    //   localStorage.removeItem('user');
+    //   setAppUser(null);
+    //   router.push("/login");
+    //   return;
+    // }
 
     // Original Supabase logout
     try {
@@ -124,7 +120,7 @@ export function UserNav() {
       }
       // The onAuthStateChange listener should handle setting appUser to null and redirecting.
       // If onAuthStateChange is not reliably redirecting, uncomment the line below:
-      // router.push("/login"); 
+      router.push("/login");
     } catch (error: any) {
       console.error("Error logging out:", error.message);
       // Optionally, inform the user about the error

@@ -30,25 +30,26 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsLoading(true);
-    const mockToken = localStorage.getItem('token');
-    const mockUserString = localStorage.getItem('user');
-
-    if (mockToken === 'mock-token-123' && mockUserString) {
-      try {
-        const mockUserData = JSON.parse(mockUserString);
-        setUserName(mockUserData.name || "Mock User");
-        // Set mock data or defaults for other states if needed
-        setTotalContracts(10); // Example mock data
-        setPendingApproval(2);  // Example mock data
-        setDueThisWeek(1);      // Example mock data
-        setRiskScore(75);       // Example mock data
-        setIsLoading(false);
-        return; // Exit early for mock session, skip Supabase auth checks
-      } catch (e) {
-        console.error("Failed to parse mock user data from localStorage", e);
-        // Fall through to normal Supabase auth if mock data is invalid
-      }
-    }
+    // Hapus atau komentari bagian mock session untuk memastikan data pengguna asli yang dimuat
+    // const mockToken = localStorage.getItem('token');
+    // const mockUserString = localStorage.getItem('user');
+    //
+    // if (mockToken === 'mock-token-123' && mockUserString) {
+    //   try {
+    //     const mockUserData = JSON.parse(mockUserString);
+    //     setUserName(mockUserData.name || "Mock User");
+    //     // Set mock data or defaults for other states if needed
+    //     setTotalContracts(10); // Example mock data
+    //     setPendingApproval(2);  // Example mock data
+    //     setDueThisWeek(1);      // Example mock data
+    //     setRiskScore(75);       // Example mock data
+    //     setIsLoading(false);
+    //     return; // Exit early for mock session, skip Supabase auth checks
+    //   } catch (e) {
+    //     console.error("Failed to parse mock user data from localStorage", e);
+    //     // Fall through to normal Supabase auth if mock data is invalid
+    //   }
+    // }
 
     const fetchData = async (session: any) => {
       if (!session?.user) {
@@ -100,10 +101,6 @@ export default function DashboardPage() {
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // If it's a mock session, the effect should have returned early.
-      // This listener is for real Supabase sessions.
-      if (localStorage.getItem('token') === 'mock-token-123') return;
-
       if (session) {
         await fetchData(session);
       } else {
@@ -113,21 +110,16 @@ export default function DashboardPage() {
       }
     });
 
-    // Initial check for real Supabase session
-    if (localStorage.getItem('token') !== 'mock-token-123') {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          fetchData(session);
-        } else {
-          // Only redirect if not already handled by onAuthStateChange and not a mock session
-          // This check might be redundant if onAuthStateChange fires reliably on load.
-           console.log("Initial check: No real session, redirecting to login.");
-           router.push('/login');
-           setIsLoading(false);
-        }
-      });
-    }
-
+    // Initial check for Supabase session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        fetchData(session);
+      } else {
+         console.log("Initial check: No session, redirecting to login.");
+         router.push('/login');
+         setIsLoading(false);
+      }
+    });
 
     return () => {
       authListener?.subscription?.unsubscribe();

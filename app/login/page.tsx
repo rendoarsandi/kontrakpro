@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Eye, EyeOff, FileText, Loader2, Shield, Lock, Chrome, Mail, KeyRound, LogIn, Zap, Brain } from "lucide-react" // Added Zap and Brain
+import { Bell, Eye, EyeOff, FileSignature, Loader2, Shield, Lock, Chrome, Mail, KeyRound, LogIn, Zap, Brain } from "lucide-react" // Added Zap and Brain, changed FileText to FileSignature
 import { supabase } from "@/lib/supabaseClient"
 
 import { Button } from "@/components/ui/button"
@@ -94,36 +94,36 @@ export default function LoginPage() {
     }
   };
 
-  const handleMockLogin = async () => {
-    setIsLoading(true);
-    try {
-      localStorage.setItem('token', 'mock-token-123')
-      localStorage.setItem('user', JSON.stringify({
-        id: '646e21b8-e468-4907-836b-d2a78e4d3eb3',
-        email: 'mockuser@example.com',
-        name: 'Mock User',
-        organization: { 
-          id: '86c31277-cba9-4413-9105-5e7a7e62b0d9',
-          name: 'Mock Organization Inc.'
-        }
-      }))
-      
-      toast({
-        title: "Demo Login Successful",
-        description: "Redirecting to dashboard...",
-      })
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Error during mock login:', error)
-      toast({
-        title: "Demo Login Failed",
-        description: "Could not perform demo login. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  // const handleMockLogin = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     localStorage.setItem('token', 'mock-token-123')
+  //     localStorage.setItem('user', JSON.stringify({
+  //       id: '646e21b8-e468-4907-836b-d2a78e4d3eb3',
+  //       email: 'mockuser@example.com',
+  //       name: 'Mock User',
+  //       organization: {
+  //         id: '86c31277-cba9-4413-9105-5e7a7e62b0d9',
+  //         name: 'Mock Organization Inc.'
+  //       }
+  //     }))
+  //
+  //     toast({
+  //       title: "Demo Login Successful",
+  //       description: "Redirecting to dashboard...",
+  //     })
+  //     router.push('/dashboard')
+  //   } catch (error) {
+  //     console.error('Error during mock login:', error)
+  //     toast({
+  //       title: "Demo Login Failed",
+  //       description: "Could not perform demo login. Please try again.",
+  //       variant: "destructive",
+  //     })
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -132,8 +132,8 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-md space-y-8">
           <div className="flex flex-col items-center text-center">
             <Link href="/" className="mb-6 flex items-center gap-2">
-              <FileText className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">KontrakPro</span>
+              <FileSignature className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold animate-pulse">KontrakPro</span>
             </Link>
             <h1 className="text-3xl font-bold tracking-tight">Welcome Back!</h1>
             <p className="text-muted-foreground">
@@ -238,15 +238,15 @@ export default function LoginPage() {
                   <Chrome className="h-4 w-4" />
                   Login with Google
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="secondary" 
+                {/* <Button
+                  type="button"
+                  variant="secondary"
                   className="w-full"
                   onClick={handleMockLogin}
                   disabled={isLoading}
                 >
                   Demo Login (Mock User)
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
             <CardFooter className="justify-center text-sm">
@@ -275,19 +275,19 @@ export default function LoginPage() {
       {/* Right side - Image / Branding */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white">
         <div className="max-w-md space-y-8 text-center">
-          <FileText className="mx-auto h-16 w-16 text-primary-foreground/80" />
+          <FileSignature className="mx-auto h-16 w-16 text-slate-400" />
           <h2 className="text-4xl font-bold tracking-tight">
             Unlock Efficiency in Contract Management
           </h2>
-          <p className="text-lg text-primary-foreground/70">
+          <p className="text-lg text-slate-300">
             KontrakPro provides a secure, AI-driven platform to manage your contracts seamlessly from anywhere.
           </p>
           <div className="grid grid-cols-2 gap-6 pt-4 text-left">
             {[
-              { icon: <FileText className="h-6 w-6 text-primary-foreground/80" />, text: "Centralized Repository" },
-              { icon: <Zap className="h-6 w-6 text-primary-foreground/80" />, text: "Automated Workflows" },
-              { icon: <Brain className="h-6 w-6 text-primary-foreground/80" />, text: "AI-Powered Insights" },
-              { icon: <Shield className="h-6 w-6 text-primary-foreground/80" />, text: "Bank-Grade Security" },
+              { icon: <FileSignature className="h-6 w-6 text-slate-400" />, text: "Centralized Repository" },
+              { icon: <Zap className="h-6 w-6 text-slate-400" />, text: "Automated Workflows" },
+              { icon: <Brain className="h-6 w-6 text-slate-400" />, text: "AI-Powered Insights" },
+              { icon: <Shield className="h-6 w-6 text-slate-400" />, text: "Bank-Grade Security" },
             ].map(item => (
               <div key={item.text} className="flex items-center gap-3">
                 {item.icon}

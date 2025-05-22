@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  FileText,
+  FileSignature, // Changed from FileText
   Shield,
   Users,
   Zap,
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 const features = [
   {
-    icon: <FileText className="h-8 w-8 text-primary" />,
+    icon: <FileSignature className="h-8 w-8 text-primary" />,
     title: "Contract Lifecycle Management",
     description: "Full control from creation, templating, and versioning to secure storage and easy export (PDF, HTML).",
     comingSoon: false,
@@ -66,22 +66,22 @@ const features = [
 const testimonials = [
   {
     name: "Sarah L., Legal Operations Manager",
-    avatar: "/placeholder-user.jpg", // Replace with actual user image
-    companyLogo: "/placeholder-logo.svg", // Replace with actual company logo
+    avatar: "https://source.unsplash.com/100x100/?woman,professional, улыбка", // Suggested royalty-free image
+    companyLogo: "https://via.placeholder.com/120x50.png?text=Company+A", // Suggested placeholder logo
     testimonial: "KontrakPro has revolutionized how we handle contracts. The AI analysis is a game-changer, saving us countless hours and improving accuracy.",
     rating: 5,
   },
   {
     name: "John B., CFO at TechStart Inc.",
-    avatar: "/placeholder-user.jpg", // Replace with actual user image
-    companyLogo: "/placeholder-logo.svg", // Replace with actual company logo
+    avatar: "https://source.unsplash.com/100x100/?man,professional,ceo", // Suggested royalty-free image
+    companyLogo: "https://via.placeholder.com/120x50.png?text=TechStart+Inc.", // Suggested placeholder logo
     testimonial: "The workflow automation and e-signature features have significantly sped up our deal closures. Highly recommended!",
     rating: 5,
   },
   {
     name: "Maria G., Small Business Owner",
-    avatar: "/placeholder-user.jpg", // Replace with actual user image
-    companyLogo: "/placeholder-logo.svg", // Replace with actual company logo
+    avatar: "https://source.unsplash.com/100x100/?woman,business,owner", // Suggested royalty-free image
+    companyLogo: "https://via.placeholder.com/120x50.png?text=SmallBiz+Solutions", // Suggested placeholder logo
     testimonial: "As a small business, KontrakPro provides enterprise-level features at an affordable price. The CRM integration is seamless.",
     rating: 4,
   },
@@ -177,7 +177,7 @@ export default function Home() {
               <Card className="overflow-hidden shadow-2xl dark:shadow-primary/10 border-primary/20">
                 <CardContent className="p-0">
                   <img
-                    src="/placeholder.jpg" // Replace with your actual showcase image
+                    src="https://via.placeholder.com/1200x675.png?text=KontrakPro+Platform+Showcase" // Placeholder image
                     alt="KontrakPro Platform Showcase"
                     className="h-auto w-full object-cover aspect-video"
                     width={1200}
@@ -203,7 +203,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, index) => (
-                <Card key={index} className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <Card key={index} className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
                   <CardHeader className="flex flex-row items-start gap-4 p-6 bg-muted/30 dark:bg-muted/20">
                     {feature.icon}
                     <div className="flex-1">
@@ -216,7 +216,7 @@ export default function Home() {
                   </CardContent>
                   <CardFooter className="p-6 pt-0">
                      <Button variant="link" asChild className="p-0 h-auto text-primary">
-                        <Link href="#">Learn More <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                        <Link href="#features">Learn More <ArrowRight className="ml-2 h-4 w-4" /></Link>
                      </Button>
                   </CardFooter>
                 </Card>
@@ -240,10 +240,10 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {[
                 { num: 1, title: "Sign Up", description: "Create your account in seconds. No credit card required for trial.", icon: <Users className="h-8 w-8 text-primary" /> },
-                { num: 2, title: "Upload or Create", description: "Easily upload existing contracts or create new ones using our templates.", icon: <FileText className="h-8 w-8 text-primary" /> },
+                { num: 2, title: "Upload or Create", description: "Easily upload existing contracts or create new ones using our templates.", icon: <FileSignature className="h-8 w-8 text-primary" /> },
                 { num: 3, title: "Automate & Analyze", description: "Set up workflows, get AI insights, and manage your contracts efficiently.", icon: <Brain className="h-8 w-8 text-primary" /> },
               ].map((step) => (
-                <Card key={step.num} className="text-center">
+                <Card key={step.num} className="text-center animate-fade-in-up" style={{ animationDelay: `${step.num * 0.1}s` }}>
                   <CardHeader>
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
                       {step.icon}
@@ -273,7 +273,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="flex flex-col">
+                <Card key={index} className="flex flex-col animate-fade-in-up" style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
                   <CardHeader className="pb-4">
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-12 w-12">
@@ -318,7 +318,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 items-start">
               {pricingPlans.map((plan, index) => (
-                <Card key={index} className={cn("flex flex-col", plan.popular ? "border-2 border-primary shadow-xl dark:shadow-primary/20" : "")}>
+                <Card key={index} className={cn("flex flex-col animate-fade-in-up", plan.popular ? "border-2 border-primary shadow-xl dark:shadow-primary/20" : "")} style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
                   {plan.popular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-sm">Most Popular</Badge>
                   )}
@@ -355,7 +355,7 @@ export default function Home() {
         </section>
 
         {/* Call to Action Section */}
-        <section className="w-full py-20 md:py-28 lg:py-32 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white">
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white dark:from-purple-700 dark:via-pink-700 dark:to-rose-700">
           <div className="container mx-auto max-w-screen-md grid items-center justify-center gap-8 px-4 text-center md:px-6">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl/tight text-white">
@@ -368,7 +368,7 @@ export default function Home() {
             </div>
             <div className="mx-auto w-full max-w-sm space-y-3">
               <div className="flex flex-col gap-3 min-[400px]:flex-row justify-center">
-                <Button asChild size="lg" className="bg-white hover:bg-slate-100 text-primary text-base px-8 h-12 shadow-lg hover:shadow-xl transition-shadow">
+                <Button asChild size="lg" className="bg-white hover:bg-slate-100 text-primary dark:text-pink-600 text-base px-8 h-12 shadow-lg hover:shadow-xl transition-shadow">
                   <Link href="/signup">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -387,8 +387,8 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center space-x-2 mb-4">
-                <FileText className="h-7 w-7 text-primary" />
-                <span className="text-xl font-bold">KontrakPro</span>
+                <FileSignature className="h-7 w-7 text-primary" />
+                <span className="text-xl font-bold animate-pulse">KontrakPro</span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-xs">
                 AI-powered contract lifecycle management to streamline your legal processes.
@@ -436,21 +436,4 @@ export default function Home() {
   );
 }
 
-// Keyframes for animations (can be moved to globals.css)
-/*
-@layer utilities {
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
-  }
-}
-*/
+// Keyframes for animations are in globals.css
