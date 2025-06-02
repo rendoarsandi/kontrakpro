@@ -5,7 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Bell, Eye, EyeOff, FileSignature, Loader2, Shield, Lock, Chrome, Mail, KeyRound, LogIn, Zap, Brain } from "lucide-react" // Added Zap and Brain, changed FileText to FileSignature
-import { supabase } from "@/lib/supabaseClient"
+// import { supabase } from "@/lib/supabaseClient" // Supabase removed
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,71 +27,40 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      })
 
-      if (error) {
-        throw error
-      }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (data.session) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back! Redirecting to dashboard...",
-        })
-        router.push("/dashboard")
-      } else {
-        console.error('Login successful but no session data received.')
-        toast({
-          title: "Login Error",
-          description: "Login seemed successful but no session was created. Please try again.",
-          variant: "destructive",
-        })
-      }
-    } catch (error: any) {
-      console.error('Login failed:', error.message)
+    // Placeholder for actual login logic if Supabase is not used
+    // For now, let's assume login is successful for demonstration
+    // In a real scenario, you would replace this with your own auth logic
+    if (email && password) { // Basic check, replace with real validation
+      toast({
+        title: "Login Attempted (Demo)",
+        description: "Login functionality is for demonstration. Redirecting to dashboard.",
+      });
+      router.push("/dashboard");
+    } else {
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials or server error. Please try again.",
+        description: "Please enter email and password.",
         variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      });
     }
+    setIsLoading(false);
   }
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      if (error) {
-        console.error('Google login error:', error.message);
-        toast({
-          title: "Google Login Error",
-          description: error.message || "Could not initiate Google login. Please try again.",
-          variant: "destructive",
-        })
-      }
-      // Supabase handles redirection
-    } catch (error: any) {
-      console.error('Google login failed:', error);
-      toast({
-        title: "Google Login Failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      // setIsLoading(false); // Loader should ideally persist until redirection or clear error
-    }
+    // Placeholder for Google login logic if Supabase is not used
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({
+      title: "Google Login (Demo)",
+      description: "Google login functionality is for demonstration.",
+      variant: "default",
+    });
+    // router.push("/dashboard"); // Optionally redirect or handle differently
+    setIsLoading(false);
   };
 
   return (

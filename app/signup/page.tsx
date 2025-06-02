@@ -4,7 +4,7 @@ import React, { useState } from "react" // Changed import type and combined with
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, FileText, Loader2, Chrome } from "lucide-react" // Added Chrome
-import { supabase } from "@/lib/supabaseClient" // Import Supabase client
+// import { supabase } from "@/lib/supabaseClient" // Supabase removed
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,71 +31,30 @@ export default function SignupPage() {
     setIsLoading(true)
     setSignupMessage(null)
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            full_name: `${firstName} ${lastName}`, // Supabase often uses full_name
-            company_name: companyName,
-            company_size: companySize,
-            // You can add more metadata here
-          },
-          // emailRedirectTo: `${window.location.origin}/auth/callback` // If you want to redirect after email confirmation
-        },
-      })
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (error) {
-        throw error
-      }
-
-      if (data.user && data.user.identities && data.user.identities.length === 0) {
-        // This case can happen if email confirmation is required and the user already exists but is not confirmed.
-        setSignupMessage("User already exists but is not confirmed. Please check your email to confirm your account or try logging in.")
-      } else if (data.session) {
-        // User is signed up and logged in (e.g. if email confirmation is disabled)
-        // Or if you handle the session immediately after signup (less common with email confirmation)
-        router.push("/dashboard")
-      } else if (data.user) {
-        // User is signed up, email confirmation likely required.
-        setSignupMessage("Signup successful! Please check your email to confirm your account.")
-        // Optionally, clear form or redirect to a "check your email" page
-      } else {
-        setSignupMessage("Signup successful, but no user data returned. Please check your email or try logging in.")
-      }
-
-    } catch (error: any) {
-      console.error('Signup failed:', error.message)
-      setSignupMessage(`Signup failed: ${error.message}`)
-      // Example: toast({ title: "Signup Failed", description: error.message, variant: "destructive" })
-    } finally {
-      setIsLoading(false)
+    // Placeholder for actual signup logic if Supabase is not used
+    // For now, let's assume signup is successful for demonstration
+    if (email && password && firstName && lastName && companyName && companySize) { // Basic check
+      setSignupMessage("Signup Attempted (Demo). Redirecting to dashboard.");
+      // In a real scenario, you would replace this with your own auth logic
+      // and potentially redirect to a "check your email" page or login page.
+      setTimeout(() => router.push("/dashboard"), 1500); // Delayed redirect
+    } else {
+      setSignupMessage("Signup failed: Please fill in all required fields.");
     }
+    setIsLoading(false);
   }
 
   const handleGoogleSignup = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      if (error) {
-        console.error('Google signup error:', error.message);
-        setSignupMessage(`Google signup failed: ${error.message}`);
-      }
-      // Supabase handles redirection
-    } catch (error: any) {
-      console.error('Google signup failed:', error);
-      setSignupMessage(`Google signup failed: ${error.message || 'An unexpected error occurred.'}`);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    setSignupMessage(null);
+    // Placeholder for Google signup logic if Supabase is not used
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setSignupMessage("Google Signup (Demo). This functionality is for demonstration.");
+    // router.push("/dashboard"); // Optionally redirect or handle differently
+    setIsLoading(false);
   };
 
   const handleMockSignup = () => {

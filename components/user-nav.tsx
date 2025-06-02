@@ -15,8 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 // import { api } from "@/lib/api" // api.logout() will be replaced
-import { supabase } from "@/lib/supabaseClient" // Import Supabase client
-import { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js" // Import Supabase User type, AuthChangeEvent, Session
+// import { supabase } from "@/lib/supabaseClient" // Supabase removed
+// import { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js" // Supabase types removed
 
 interface AppUserData { // Renamed to avoid conflict with Lucide User icon
   id: string
@@ -27,73 +27,36 @@ interface AppUserData { // Renamed to avoid conflict with Lucide User icon
 
 export function UserNav() {
   const router = useRouter()
-  const [appUser, setAppUser] = useState<AppUserData | null>(null) // Changed state variable name
-  const [loading, setLoading] = useState(true)
+  // Since Supabase is removed, use dummy user data or a different auth system.
+  // For now, let's use a static user for display purposes.
+  const appUser: AppUserData | null = {
+    id: "dummy-user-id",
+    name: "Demo User",
+    email: "demo@example.com",
+    role: "User"
+  };
+  const [loading, setLoading] = useState(false); // No longer loading from Supabase
 
   // Fungsi untuk mendapatkan inisial dari nama
   const getInitials = (name: string | undefined) => {
-    if (!name) return "U"
+    if (!name) return "DU"; // Default initials for Demo User
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2)
-  }
+      .substring(0, 2);
+  };
 
-  useEffect(() => {
-
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setAppUser({
-          id: session.user.id,
-          email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User",
-          role: session.user.user_metadata?.role || "User",
-        });
-      }
-      setLoading(false);
-    };
-
-    fetchUser();
-
-    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        setAppUser({
-          id: session.user.id,
-          email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User",
-          role: session.user.user_metadata?.role || "User",
-        });
-      } else if (event === "SIGNED_OUT") {
-        setAppUser(null);
-        router.push("/login"); // Redirect to login on sign out
-      }
-    });
-
-    return () => {
-      authListener?.unsubscribe();
-    };
-  }, [router]);
+  // useEffect for fetching user data is removed as Supabase is not used.
 
   // Fungsi untuk logout
   const handleLogout = async () => {
-
-    // Original Supabase logout
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error logging out:", error.message);
-        // Optionally, inform the user about the error
-      }
-      // The onAuthStateChange listener should handle setting appUser to null and redirecting.
-      // If onAuthStateChange is not reliably redirecting, uncomment the line below:
-      router.push("/login");
-    } catch (error: any) {
-      console.error("Error logging out:", error.message);
-      // Optionally, inform the user about the error
-    }
+    // Placeholder for logout logic if not using Supabase
+    // For now, just redirect to login
+    console.log("Logout initiated. Redirecting to login.");
+    // If you have a different auth system, integrate its logout here.
+    router.push("/login");
   };
 
   if (loading) {

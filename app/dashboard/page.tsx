@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, Calendar, ChevronDown, Clock, FileText, Filter, Plus, Search, Shield } from "lucide-react"
-import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
+// import { supabase } from "@/lib/supabaseClient"; // Supabase removed
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,89 +18,20 @@ export default function DashboardPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
 
-  const [userName, setUserName] = useState<string | null>(null);
-  const [totalContracts, setTotalContracts] = useState<number | null>(null);
-  const [totalContractsTrend, setTotalContractsTrend] = useState<string | null>(null);
-  const [pendingApproval, setPendingApproval] = useState<number | null>(null);
-  const [pendingApprovalSubtext, setPendingApprovalSubtext] = useState<string | null>(null);
-  const [dueThisWeek, setDueThisWeek] = useState<number | null>(null);
-  const [dueThisWeekSubtext, setDueThisWeekSubtext] = useState<string | null>(null);
-  const [riskScore, setRiskScore] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Static data since Supabase is removed
+  const userName = "Demo User";
+  const totalContracts = 125;
+  const totalContractsTrend = "+5 this month";
+  const pendingApproval = 8;
+  const pendingApprovalSubtext = "2 new since yesterday";
+  const dueThisWeek = 3;
+  const dueThisWeekSubtext = "1 critical";
+  const riskScore = 75; // Example risk score
+  const [isLoading, setIsLoading] = useState(false); // No longer loading from Supabase initially
 
-  useEffect(() => {
-    setIsLoading(true);
-
-    const fetchData = async (session: any) => {
-      if (!session?.user) {
-        console.error("No user in session, redirecting to login.");
-        router.push('/login');
-        setIsLoading(false);
-        return;
-      }
-      
-      const user = session.user;
-      setUserName(user.user_metadata?.full_name || user.email || "User");
-
-      try {
-        const today = new Date();
-        const oneWeekFromToday = new Date(today);
-        oneWeekFromToday.setDate(today.getDate() + 7);
-
-        const [totalContractsResult, pendingContractsResult, dueContractsResult] = await Promise.all([
-          supabase.from('contracts').select('*', { count: 'exact', head: true }),
-          supabase.from('contracts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
-          supabase.from('contracts').select('*', { count: 'exact', head: true })
-            .gte('end_date', today.toISOString().split('T')[0])
-            .lte('end_date', oneWeekFromToday.toISOString().split('T')[0])
-        ]);
-
-        if (totalContractsResult.error) throw totalContractsResult.error;
-        setTotalContracts(totalContractsResult.count);
-
-        if (pendingContractsResult.error) throw pendingContractsResult.error;
-        setPendingApproval(pendingContractsResult.count);
-
-        if (dueContractsResult.error) throw dueContractsResult.error;
-        setDueThisWeek(dueContractsResult.count);
-
-        // setRiskScore(null); // Assuming risk score might be calculated differently or fetched elsewhere
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setTotalContracts(0);
-        setPendingApproval(0);
-        setDueThisWeek(0);
-        // setRiskScore(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        await fetchData(session);
-      } else {
-        console.log("No active session or session ended, redirecting to login.");
-        router.push('/login');
-        setIsLoading(false);
-      }
-    });
-
-    // Initial check for Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        fetchData(session);
-      } else {
-         console.log("Initial check: No session, redirecting to login.");
-         router.push('/login');
-         setIsLoading(false);
-      }
-    });
-
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
-  }, [router]);
+  // useEffect for fetching data and auth state is removed as Supabase is not used.
+  // If you have an alternative auth system, integrate its logic here.
+  // For now, we assume the user is "logged in" for display purposes.
 
   const getRiskBadgeVariant = (score: number | null): "default" | "destructive" | "outline" | "secondary" => {
     if (score === null) return "outline";

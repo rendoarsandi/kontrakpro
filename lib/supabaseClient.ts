@@ -1,13 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+// Supabase client has been removed from the project.
+// This file is kept to prevent import errors in other files that might still reference it,
+// but it no longer initializes or exports a Supabase client.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!supabaseUrl) {
-  throw new Error("Missing env.NEXT_PUBLIC_SUPABASE_URL")
-}
-if (!supabaseAnonKey) {
-  throw new Error("Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY")
-}
-
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = null;
