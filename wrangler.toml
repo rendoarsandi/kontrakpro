@@ -2,3 +2,11 @@ name = "kontrakpro"
 compatibility_date = "2025-06-02"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
+
+# Variabel lingkungan untuk produksi
+# Catatan: Untuk Cloudflare Pages, pengelolaan variabel lingkungan produksi
+# biasanya sangat dianjurkan melalui UI Dasbor Cloudflare.
+# Penambahan di sini adalah upaya untuk menyediakannya jika UI terbatas.
+# Pastikan ini tidak bertentangan dengan konfigurasi di dasbor.
+[vars]
+NEXTAUTH_URL = "https://kontrakpro.pages.dev/"

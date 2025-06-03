@@ -1,71 +1,70 @@
 "use client"
 
-import * as React from "react"
-import { useState } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Eye, EyeOff, FileSignature, Loader2, Shield, Lock, Chrome, Mail, KeyRound, LogIn, Zap, Brain } from "lucide-react" // Added Zap and Brain, changed FileText to FileSignature
-// import { supabase } from "@/lib/supabaseClient" // Supabase removed
+import { useSession, signIn, signOut } from "next-auth/react" // Ditambahkan untuk next-auth
+import { Eye, EyeOff, FileSignature, Loader2, Chrome, Mail, KeyRound, LogIn } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/use-toast" // Assuming you have a toast hook
+// import { Separator } from "@/components/ui/separator" // Separator not used in current login form logic
+import { useToast } from "@/hooks/use-toast"
+
+// Assuming window.turnstile and window.onloadTurnstileCallback and their related types (like TurnstileWidgetParams)
+// are defined globally elsewhere (e.g., by another .d.ts file, a library, or tsconfig "types").
+// If errors persist for these, it indicates a missing or conflicting global type definition.
 
 export default function LoginPage() {
   const router = useRouter()
-  const { toast } = useToast() // Initialize toast
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const { toast } = useToast()
+  const { data: session, status } = useSession() // Ditambahkan untuk next-auth
+  const [isLoading, setIsLoading] = useState(false) // Tetap digunakan untuk tombol Google
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  // Logika email/password dan Turnstile dihapus untuk fokus pada Google Auth
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Placeholder for actual login logic if Supabase is not used
-    // For now, let's assume login is successful for demonstration
-    // In a real scenario, you would replace this with your own auth logic
-    if (email && password) { // Basic check, replace with real validation
-      toast({
-        title: "Login Attempted (Demo)",
-        description: "Login functionality is for demonstration. Redirecting to dashboard.",
-      });
-      router.push("/dashboard");
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Please enter email and password.",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard"); // Arahkan ke dasbor jika sudah terautentikasi
     }
-    setIsLoading(false);
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    // Placeholder for Google login logic if Supabase is not used
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({
-      title: "Google Login (Demo)",
-      description: "Google login functionality is for demonstration.",
-      variant: "default",
-    });
-    // router.push("/dashboard"); // Optionally redirect or handle differently
-    setIsLoading(false);
-  };
+  // Jika sudah terautentikasi, idealnya sudah diarahkan, tapi sebagai fallback:
+  if (session) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl">Anda Sudah Masuk</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>Masuk sebagai: {session.user?.email}</p>
+            <Button onClick={() => signOut()} className="w-full">
+              Keluar
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/dashboard')} className="w-full">
+              Ke Dasbor
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
+  // Tampilan login jika belum terautentikasi
   return (
     <div className="flex min-h-screen w-full bg-background">
-      {/* Left side - Login form */}
       <div className="flex w-full flex-col items-center justify-center p-4 md:w-1/2 lg:w-2/5">
         <div className="mx-auto w-full max-w-md space-y-8">
           <div className="flex flex-col items-center text-center">
@@ -80,109 +79,50 @@ export default function LoginPage() {
           </div>
 
           <Card className="shadow-xl">
+            {/* Formulir login email/password dihapus, hanya menyisakan opsi Google */}
             <CardHeader>
               <CardTitle className="text-2xl">Login</CardTitle>
-              <CardDescription>Use your registered email and password.</CardDescription>
+              <CardDescription>Gunakan akun Google Anda untuk masuk.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="name@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link href="/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="pl-10 pr-10" // Added pr-10 for eye icon
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="remember" 
-                      checked={rememberMe} 
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    />
-                    <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground">
-                      Remember me
-                    </Label>
-                  </div>
-                </div>
-                <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <LogIn className="mr-2 h-4 w-4" />
-                  )}
-                  Login
-                </Button>
-              </form>
-
-              <div className="relative">
+              {/* Bagian "Or continue with" dan tombol Google */}
+              <div className="relative mt-6"> {/* Memberi sedikit ruang jika form sebelumnya ada */}
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Masuk dengan
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2 pt-4"> {/* Menambahkan padding top */}
                  <Button
                   type="button"
                   variant="outline"
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
+                  onClick={() => {
+                    console.log("Attempting Google Login..."); // LOGGING
+                    setIsLoading(true); // Set loading sebelum memanggil signIn
+                    signIn("google", { callbackUrl: "/dashboard" });
+                  }}
+                  disabled={isLoading} // Hanya bergantung pada isLoading lokal
                 >
-                  <Chrome className="h-4 w-4" />
-                  Login with Google
+                  {isLoading ? ( // Hanya bergantung pada isLoading lokal
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Chrome className="mr-2 h-4 w-4" />
+                  )}
+                  Masuk dengan Google
                 </Button>
               </div>
             </CardContent>
             <CardFooter className="justify-center text-sm">
               <p className="text-muted-foreground">
-                Don't have an account?{" "}
+                Belum punya akun?{" "}
                 <Link href="/signup" className="font-semibold text-primary hover:underline">
-                  Sign up
+                  Daftar
                 </Link>
               </p>
             </CardFooter>
@@ -201,7 +141,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right side - Image / Branding */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white">
         <div className="max-w-md space-y-8 text-center">
           <FileSignature className="mx-auto h-16 w-16 text-slate-400" />
@@ -211,24 +150,6 @@ export default function LoginPage() {
           <p className="text-lg text-slate-300">
             KontrakPro provides a secure, AI-driven platform to manage your contracts seamlessly from anywhere.
           </p>
-          <div className="grid grid-cols-2 gap-6 pt-4 text-left">
-            {[
-              { icon: <FileSignature className="h-6 w-6 text-slate-400" />, text: "Centralized Repository" },
-              { icon: <Zap className="h-6 w-6 text-slate-400" />, text: "Automated Workflows" },
-              { icon: <Brain className="h-6 w-6 text-slate-400" />, text: "AI-Powered Insights" },
-              { icon: <Shield className="h-6 w-6 text-slate-400" />, text: "Bank-Grade Security" },
-            ].map(item => (
-              <div key={item.text} className="flex items-center gap-3">
-                {item.icon}
-                <span className="font-medium">{item.text}</span>
-              </div>
-            ))}
-          </div>
-          <div className="pt-6">
-            <Button variant="outline" size="lg" className="bg-transparent text-white border-white/50 hover:bg-white/10 hover:border-white" asChild>
-              <Link href="/">Learn More About KontrakPro</Link>
-            </Button>
-          </div>
         </div>
       </div>
     </div>

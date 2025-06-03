@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react" // Changed import type and combined with useState
+import React, { useState, useEffect } from "react" // useEffect ditambahkan
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, FileText, Loader2, Chrome } from "lucide-react" // Added Chrome
+import { useSession, signIn } from "next-auth/react" // Ditambahkan untuk next-auth
+import { Eye, EyeOff, FileText, Loader2, Chrome } from "lucide-react"
 // import { supabase } from "@/lib/supabaseClient" // Supabase removed
 
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function SignupPage() {
   const router = useRouter()
+  const { data: session, status } = useSession() // Ditambahkan untuk next-auth
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -23,8 +25,14 @@ export default function SignupPage() {
   const [companyName, setCompanyName] = useState("")
   const [companySize, setCompanySize] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [signupMessage, setSignupMessage] = useState<string | null>(null) // For success/error messages
+  const [isLoading, setIsLoading] = useState(false) // Tetap digunakan untuk tombol dan form
+  const [signupMessage, setSignupMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard"); // Arahkan jika sudah masuk
+    }
+  }, [status, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,23 +55,42 @@ export default function SignupPage() {
     setIsLoading(false);
   }
 
-  const handleGoogleSignup = async () => {
-    setIsLoading(true);
-    setSignupMessage(null);
-    // Placeholder for Google signup logic if Supabase is not used
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setSignupMessage("Google Signup (Demo). This functionality is for demonstration.");
-    // router.push("/dashboard"); // Optionally redirect or handle differently
-    setIsLoading(false);
+  const handleGoogleSignup = () => {
+    console.log("Attempting Google Signup..."); // LOGGING
+    setIsLoading(true); // Set loading sebelum memanggil signIn
+    // Untuk signup, biasanya kita tidak langsung redirect ke dashboard,
+    // tapi ke halaman yang sama atau halaman profil untuk melengkapi data.
+    // Namun, untuk konsistensi dengan login, kita arahkan ke dashboard.
+    // Atau, Anda bisa menggunakan callbackUrl yang berbeda jika diperlukan.
+    signIn("google", { callbackUrl: "/dashboard" });
+    // setIsLoading(false) tidak diperlukan karena akan ada pengalihan halaman
   };
 
-  const handleMockSignup = () => {
-    setIsLoading(true)
+  // handleMockSignup dihapus
 
-    // Redirect langsung ke dashboard
-    setTimeout(() => {
-      router.push("/dashboard")
-    }, 800)
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // Jika sudah terautentikasi (seharusnya sudah diarahkan oleh useEffect)
+  if (session) {
+     return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Anda Sudah Masuk</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Masuk sebagai: {session.user?.email}</p>
+            <Button onClick={() => router.push('/dashboard')} className="w-full mt-4">Ke Dasbor</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -220,16 +247,7 @@ export default function SignupPage() {
                   <Chrome className="h-4 w-4" />
                   Sign up with Google
                 </Button>
-                <Button variant="outline" className="w-full" onClick={handleMockSignup} disabled={isLoading}>
-                  {isLoading && !signupMessage?.includes("Google") ? ( // Ensure loader shows for the correct action
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Redirecting...
-                    </>
-                  ) : (
-                    "Quick Access to Dashboard (Mock Signup)"
-                  )}
-                </Button>
+                {/* Tombol Mock Signup dihapus */}
               </div>
 
               <div className="mt-4 text-center text-sm">

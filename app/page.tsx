@@ -1,8 +1,8 @@
 "use client"; // Required for useState, useEffect, useRef
 
 import Link from "next/link";
-import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+// Script, useEffect, useRef, useState, useCallback (related to Turnstile) removed.
+// If other functionalities in this file need them, they should be re-added.
 import {
   ArrowRight,
   FileSignature, // Changed from FileText
@@ -144,51 +144,11 @@ const pricingPlans = [
 ];
 
 export default function Home() {
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
-  const turnstileWidgetRef = useRef<HTMLDivElement>(null);
-
-  const handleVerifyToken = async (token: string) => {
-    setVerificationStatus('Verifying...');
-    try {
-      const response = await fetch('/api/verify-turnstile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setVerificationStatus('Verification successful!');
-        // Lanjutkan dengan tindakan yang dilindungi, misalnya, mengaktifkan tombol submit
-      } else {
-        setVerificationStatus(`Verification failed: ${data.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error verifying Turnstile token:', error);
-      setVerificationStatus('Verification error. See console.');
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.turnstile && turnstileWidgetRef.current) {
-      const widgetId = window.turnstile.render(turnstileWidgetRef.current, {
-        sitekey: 'YOUR_NEW_SITE_KEY', // GANTI DENGAN SITE KEY BARU ANDA
-        callback: function(token: string) {
-          console.log(`Turnstile Token: ${token}`);
-          setTurnstileToken(token);
-          handleVerifyToken(token); // Panggil fungsi verifikasi
-        },
-      });
-      // Anda bisa menyimpan widgetId jika perlu menghapusnya nanti
-      // return () => window.turnstile.remove(widgetId);
-    }
-  }, []);
+  // Turnstile related state, ref, functions, and useEffect hook removed.
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+      {/* Turnstile Script tag removed */}
       <LandingHeader />
       <main className="flex-1">
         {/* Hero Section */}
@@ -236,30 +196,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Turnstile Widget Placeholder */}
-        <section className="w-full py-8 bg-muted/20 dark:bg-muted/10">
-          <div className="container mx-auto max-w-screen-xl px-4 md:px-6 flex justify-center">
-            <div ref={turnstileWidgetRef}>
-              {/* Widget Turnstile akan dirender di sini oleh skrip eksternal atau useEffect */}
-              {/* Jika menggunakan rendering otomatis oleh skrip, Anda akan menggunakan:
-              <div
-                className="cf-turnstile"
-                data-sitekey="YOUR_NEW_SITE_KEY" // GANTI DENGAN SITE KEY BARU ANDA
-                data-callback="handleTurnstileCallback" // Anda perlu mendefinisikan window.handleTurnstileCallback
-              ></div>
-              Namun, dengan useEffect, kita merender secara eksplisit.
-              */}
-            </div>
-          </div>
-          {turnstileToken && !verificationStatus && (
-            <p className="text-center text-sm text-blue-600 mt-2">Turnstile token diterima, memverifikasi...</p>
-          )}
-          {verificationStatus && (
-            <p className={`text-center text-sm mt-2 ${verificationStatus.includes('successful') ? 'text-green-600' : 'text-red-600'}`}>
-              {verificationStatus}
-            </p>
-          )}
-        </section>
+        {/* Turnstile Widget Placeholder section removed */}
 
         {/* Features Section */}
         <section id="features" className="w-full py-16 md:py-24 lg:py-32 bg-background">

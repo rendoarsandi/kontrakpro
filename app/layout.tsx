@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
+import AuthProvider from "@/components/providers/session-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Analytics />
-          <SpeedInsights />
+          <AuthProvider>
+            {children}
+            <Analytics />
+            <SpeedInsights />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
