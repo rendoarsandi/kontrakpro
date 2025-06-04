@@ -1,7 +1,9 @@
 "use client"; // Required for useState, useEffect, useRef
 
 import Link from "next/link";
-// Script, useEffect, useRef, useState, useCallback (related to Turnstile) removed.
+import Script from "next/script"; // Added for Turnstile
+import { useEffect, useRef, useState } from "react"; // Added for Turnstile
+// useCallback (related to Turnstile) removed.
 // If other functionalities in this file need them, they should be re-added.
 import {
   ArrowRight,
@@ -144,10 +146,26 @@ const pricingPlans = [
 ];
 
 export default function Home() {
-  // Turnstile related state, ref, functions, and useEffect hook removed.
+  const [isTurnstileLoaded, setIsTurnstileLoaded] = useState(false);
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isTurnstileLoaded && window.turnstile && turnstileContainerRef.current) {
+      window.turnstile.render(turnstileContainerRef.current, {
+        sitekey: "0x4AAAAAABf3Kmn7q-yUZLHz",
+        // You can add other Turnstile options here if needed
+      });
+    }
+  }, [isTurnstileLoaded]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer
+        onLoad={() => setIsTurnstileLoaded(true)}
+      />
       {/* Turnstile Script tag removed */}
       <LandingHeader />
       <main className="flex-1">
@@ -196,7 +214,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Turnstile Widget Placeholder section removed */}
+        {/* Turnstile Widget Placeholder */}
+        <section id="turnstile-widget" className="w-full py-12 md:py-16 lg:py-20 bg-background flex justify-center">
+          <div className="container mx-auto max-w-screen-sm px-4 md:px-6 flex justify-center">
+            <div ref={turnstileContainerRef} className="cf-turnstile" data-sitekey="0x4AAAAAABf3Kmn7q-yUZLHz"></div>
+          </div>
+        </section>
 
         {/* Features Section */}
         <section id="features" className="w-full py-16 md:py-24 lg:py-32 bg-background">
@@ -446,3 +469,32 @@ export default function Home() {
 }
 
 // Keyframes for animations are in globals.css
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string | HTMLElement, options: TurnstileOptions) => void;
+      reset: (widgetId?: string) => void;
+      getResponse: (widgetId?: string) => string | undefined;
+      remove: (widgetId?: string) => void;
+    };
+  }
+}
+
+interface TurnstileOptions {
+  sitekey: string;
+  action?: string;
+  cData?: string;
+  callback?: (token: string) => void;
+  "error-callback"?: () => void;
+  "expired-callback"?: () => void;
+  theme?: "light" | "dark" | "auto";
+  language?: string;
+  tabindex?: number;
+  "response-field"?: boolean;
+  "response-field-name"?: string;
+  size?: "normal" | "compact";
+  retry?: "auto" | "never";
+  "retry-interval"?: number;
+  "refresh-expired"?: "auto" | "manual" | "never";
+}
