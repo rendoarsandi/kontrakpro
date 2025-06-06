@@ -1,38 +1,44 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useSession, signIn, signOut } from "next-auth/react" // Ditambahkan untuk next-auth
-import { Eye, EyeOff, FileSignature, Loader2, Chrome, Mail, KeyRound, LogIn } from "lucide-react"
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { useAuth } from "@/components/providers/firebase-auth-provider"
+import { FileSignature, Loader2, Chrome } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-// import { Separator } from "@/components/ui/separator" // Separator not used in current login form logic
-import { useToast } from "@/hooks/use-toast"
-
-// Assuming window.turnstile and window.onloadTurnstileCallback and their related types (like TurnstileWidgetParams)
-// are defined globally elsewhere (e.g., by another .d.ts file, a library, or tsconfig "types").
-// If errors persist for these, it indicates a missing or conflicting global type definition.
 
 export default function LoginPage() {
   const router = useRouter()
-  const { toast } = useToast()
-  const { data: session, status } = useSession() // Ditambahkan untuk next-auth
-  const [isLoading, setIsLoading] = useState(false) // Tetap digunakan untuk tombol Google
-
-  // Logika email/password dan Turnstile dihapus untuk fokus pada Google Auth
+  const { user, loading } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard"); // Arahkan ke dasbor jika sudah terautentikasi
+    if (user) {
+      router.push("/dashboard");
     }
-  }, [status, router]);
+  }, [user, router]);
 
-  if (status === "loading") {
+  const handleGoogleLogin = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      await signInWithPopup(auth, provider);
+      // The useEffect will handle the redirect on successful login
+    } catch (error) {
+      console.error("Error during Google login: ", error);
+      setErrorMessage("Google login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -40,8 +46,7 @@ export default function LoginPage() {
     );
   }
 
-  // Jika sudah terautentikasi, idealnya sudah diarahkan, tapi sebagai fallback:
-  if (session) {
+  if (user) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -49,8 +54,8 @@ export default function LoginPage() {
             <CardTitle className="text-2xl">Anda Sudah Masuk</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p>Masuk sebagai: {session.user?.email}</p>
-            <Button onClick={() => signOut()} className="w-full">
+            <p>Masuk sebagai: {user.email}</p>
+            <Button onClick={() => getAuth().signOut()} className="w-full">
               Keluar
             </Button>
             <Button variant="outline" onClick={() => router.push('/dashboard')} className="w-full">
@@ -62,7 +67,6 @@ export default function LoginPage() {
     );
   }
 
-  // Tampilan login jika belum terautentikasi
   return (
     <div className="flex min-h-screen w-full bg-background">
       <div className="flex w-full flex-col items-center justify-center p-4 md:w-1/2 lg:w-2/5">
@@ -70,7 +74,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center text-center">
             <Link href="/" className="mb-6 flex items-center gap-2">
               <FileSignature className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold animate-pulse">KontrakPro</span>
+              <span className="text-2xl font-bold">KontrakPro</span>
             </Link>
             <h1 className="text-3xl font-bold tracking-tight">Welcome Back!</h1>
             <p className="text-muted-foreground">
@@ -79,14 +83,12 @@ export default function LoginPage() {
           </div>
 
           <Card className="shadow-xl">
-            {/* Formulir login email/password dihapus, hanya menyisakan opsi Google */}
             <CardHeader>
               <CardTitle className="text-2xl">Login</CardTitle>
               <CardDescription>Gunakan akun Google Anda untuk masuk.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Bagian "Or continue with" dan tombol Google */}
-              <div className="relative mt-6"> {/* Memberi sedikit ruang jika form sebelumnya ada */}
+            <CardContent className="space-y-4">
+               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
@@ -96,27 +98,17 @@ export default function LoginPage() {
                   </span>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 gap-2 pt-4"> {/* Menambahkan padding top */}
-                 <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2"
-                  onClick={() => {
-                    console.log("Attempting Google Login..."); // LOGGING
-                    setIsLoading(true); // Set loading sebelum memanggil signIn
-                    signIn("google", { callbackUrl: "/dashboard" });
-                  }}
-                  disabled={isLoading} // Hanya bergantung pada isLoading lokal
-                >
-                  {isLoading ? ( // Hanya bergantung pada isLoading lokal
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Chrome className="mr-2 h-4 w-4" />
-                  )}
-                  Masuk dengan Google
-                </Button>
-              </div>
+              {errorMessage && (
+                <p className="text-sm text-red-600 text-center">{errorMessage}</p>
+              )}
+              <Button onClick={handleGoogleLogin} disabled={isLoading} variant="outline" className="w-full">
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Chrome className="mr-2 h-4 w-4" />
+                )}
+                Masuk dengan Google
+              </Button>
             </CardContent>
             <CardFooter className="justify-center text-sm">
               <p className="text-muted-foreground">

@@ -1,8 +1,8 @@
 "use client"; // Required for useState, useEffect, useRef
 
 import Link from "next/link";
-// Script, useEffect, useRef, useState, useCallback (related to Turnstile) removed.
-// If other functionalities in this file need them, they should be re-added.
+import Script from "next/script";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   FileSignature, // Changed from FileText
@@ -144,11 +144,34 @@ const pricingPlans = [
 ];
 
 export default function Home() {
-  // Turnstile related state, ref, functions, and useEffect hook removed.
+  const [token, setToken] = useState<string>("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // @ts-ignore
+      if (window.turnstile) {
+        // @ts-ignore
+        window.turnstile.render(ref.current, {
+          sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!,
+          callback: function (token: string) {
+            setToken(token);
+          },
+        });
+        clearInterval(interval);
+      }
+    }, 100); // Check every 100ms
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Turnstile Script tag removed */}
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       <LandingHeader />
       <main className="flex-1">
         {/* Hero Section */}
@@ -196,7 +219,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Turnstile Widget Placeholder section removed */}
+        {/* Turnstile Widget Placeholder */}
+        <div className="mt-8 flex justify-center animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+          <div ref={ref}></div>
+        </div>
 
         {/* Features Section */}
         <section id="features" className="w-full py-16 md:py-24 lg:py-32 bg-background">
