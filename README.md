@@ -222,7 +222,7 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL, -- admin, legal, viewer
+  role TEXT NOT NULL CHECK(role IN ('admin', 'legal', 'viewer')), -- admin, legal, viewer
   organization_id TEXT NOT NULL,
   avatar_url TEXT,
   created_at INTEGER NOT NULL,
