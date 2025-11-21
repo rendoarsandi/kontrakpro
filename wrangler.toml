@@ -1,12 +1,97 @@
-name = "kontrakpro"
-compatibility_date = "2025-06-02"
-compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".vercel/output/static"
+# Wrangler configuration for KontrakPro
+# Cloudflare Workers + Pages with React Router v7
 
-# Variabel lingkungan untuk produksi
-# Catatan: Untuk Cloudflare Pages, pengelolaan variabel lingkungan produksi
-# biasanya sangat dianjurkan melalui UI Dasbor Cloudflare.
-# Penambahan di sini adalah upaya untuk menyediakannya jika UI terbatas.
-# Pastikan ini tidak bertentangan dengan konfigurasi di dasbor.
+name = "kontrakpro"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Build output directory for React Router
+pages_build_output_dir = "build/client"
+
+# Workers AI binding (for contract analysis)
+[ai]
+binding = "AI"
+
+# D1 Database bindings
+# Run: wrangler d1 create kontrakpro-db
+[[d1_databases]]
+binding = "DB"
+database_name = "kontrakpro-db"
+database_id = "" # Add your D1 database ID here after creation
+
+# KV Namespace bindings
+# Run: wrangler kv:namespace create "KONTRAKPRO_CACHE"
+# Run: wrangler kv:namespace create "KONTRAKPRO_SESSIONS"
+[[kv_namespaces]]
+binding = "CACHE"
+id = "" # Add your KV namespace ID here
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "" # Add your sessions KV namespace ID here
+
+# R2 Bucket binding (for document storage)
+# Run: wrangler r2 bucket create kontrakpro-documents
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "kontrakpro-documents"
+preview_bucket_name = "kontrakpro-documents-preview"
+
+# Durable Objects bindings
+[[durable_objects.bindings]]
+name = "COLLABORATION"
+class_name = "CollaborationDO"
+script_name = "kontrakpro"
+
+[[durable_objects.bindings]]
+name = "WORKFLOW_ENGINE"
+class_name = "WorkflowEngineDO"
+script_name = "kontrakpro"
+
+# Durable Objects migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["CollaborationDO", "WorkflowEngineDO"]
+
+# Vectorize binding (for semantic search)
+# Run: wrangler vectorize create kontrakpro-vectors --dimensions=768 --metric=cosine
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "kontrakpro-vectors"
+
+# Environment variables (for development)
+# For production, set these in Cloudflare Dashboard
 [vars]
-NEXTAUTH_URL = "https://kontrakpro.pages.dev/"
+ENVIRONMENT = "development"
+APP_URL = "http://localhost:5173"
+
+# Cron triggers for scheduled tasks
+# - Contract expiry notifications
+# - Renewal reminders
+# - Report generation
+[triggers]
+crons = [
+  "0 9 * * *",  # Daily at 9 AM UTC - Check expiring contracts
+  "0 0 * * 0",  # Weekly on Sunday - Generate weekly reports
+]
+
+# Routes configuration
+[[routes]]
+pattern = "kontrakpro.pages.dev/*"
+custom_domain = true
+
+# Development configuration
+[env.development]
+vars = { ENVIRONMENT = "development", APP_URL = "http://localhost:5173" }
+
+# Preview configuration
+[env.preview]
+vars = { ENVIRONMENT = "preview" }
+
+# Production configuration
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Observability
+[observability]
+enabled = true
