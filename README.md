@@ -324,8 +324,8 @@ CREATE TABLE tasks (
   priority TEXT NOT NULL, -- low, medium, high
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  FOREIGN KEY (contract_id) REFERENCES contracts(id),
-  FOREIGN KEY (workflow_instance_id) REFERENCES workflow_instances(id),
+  FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
+  FOREIGN KEY (workflow_instance_id) REFERENCES workflow_instances(id) ON DELETE CASCADE,
   FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
