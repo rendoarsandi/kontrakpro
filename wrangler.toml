@@ -17,18 +17,18 @@ binding = "AI"
 [[d1_databases]]
 binding = "DB"
 database_name = "kontrakpro-db"
-database_id = "" # Add your D1 database ID here after creation
+database_id = "your-d1-database-id" # Add your D1 database ID here after creation
 
 # KV Namespace bindings
 # Run: wrangler kv:namespace create "KONTRAKPRO_CACHE"
 # Run: wrangler kv:namespace create "KONTRAKPRO_SESSIONS"
 [[kv_namespaces]]
 binding = "CACHE"
-id = "" # Add your KV namespace ID here
+id = "your-kv-cache-id" # Add your KV namespace ID here
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "" # Add your sessions KV namespace ID here
+id = "your-kv-sessions-id" # Add your sessions KV namespace ID here
 
 # R2 Bucket binding (for document storage)
 # Run: wrangler r2 bucket create kontrakpro-documents

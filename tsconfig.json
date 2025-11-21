@@ -9,7 +9,7 @@
   ],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["@react-router/dev/types", "@cloudflare/workers-types"],
+    "types": ["@cloudflare/workers-types"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
