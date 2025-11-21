@@ -340,7 +340,7 @@ CREATE TABLE comments (
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (parent_id) REFERENCES comments(id)
+  FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE SET NULL
 );
 
 -- Audit Logs
