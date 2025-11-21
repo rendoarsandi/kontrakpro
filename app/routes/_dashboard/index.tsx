@@ -1,5 +1,6 @@
 import type { Route } from "./+types/index";
 import { ArrowUpRight, Clock, FileCheck, AlertTriangle, Sparkles, Activity } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Dashboard - KontrakPro" }];
@@ -17,13 +18,13 @@ export default function Dashboard() {
             KontrakPro AI has flagged 3 potential risks in the new "Vendor Agreement - Cyberdyne".
           </p>
           <div className="mt-6 flex gap-4">
-            <button className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center gap-2">
+            <Button variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50">
               <Sparkles className="h-4 w-4" />
               Review AI Insights
-            </button>
-            <button className="bg-blue-500/30 text-white border border-white/20 px-4 py-2 rounded-lg font-medium hover:bg-blue-500/40 transition-colors">
+            </Button>
+            <Button variant="outline" className="bg-blue-500/30 text-white border-white/20 hover:bg-blue-500/40 hover:text-white">
               View Pending Tasks
-            </button>
+            </Button>
           </div>
         </div>
         {/* Decorative Circle */}
@@ -86,7 +87,7 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-slate-800 rounded-xl border shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h2>
-            <button className="text-sm text-blue-600 hover:underline">View All</button>
+            <Button variant="link" className="text-blue-600">View All</Button>
           </div>
           <div className="space-y-6">
             {[
