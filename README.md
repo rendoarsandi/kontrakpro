@@ -308,7 +308,7 @@ CREATE TABLE workflow_instances (
   started_at INTEGER NOT NULL,
   completed_at INTEGER,
   FOREIGN KEY (workflow_id) REFERENCES workflows(id),
-  FOREIGN KEY (contract_id) REFERENCES contracts(id)
+  FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE
 );
 
 -- Tasks
